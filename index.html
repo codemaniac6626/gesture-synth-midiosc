@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Gesture Synth - Web MIDI & Gesture Control</title>
+<style>
+html, body {
+  margin: 0;
+  height: 100%;
+  background: #111;
+  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace;
+}
+#stage {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100dvh;
+}
+#webcam {
+  display: none;
+}
+#overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* Floating Controls Bar at Bottom Left */
+.floating-controls {
+  position: absolute;
+  bottom: 16px;
+  left: 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  z-index: 6;
+}
+
+.icon-btn {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 1px solid #3a3428;
+  background: rgba(20, 20, 20, 0.85);
+  color: #e8a13d;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(8px);
+}
+.icon-btn:hover {
+  background: rgba(40, 40, 40, 0.95);
+  border-color: #e8a13d;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(232, 161, 61, 0.3);
+}
+
+/* MIDI Status Indicator Pill */
+#midiStatusBadge {
+  position: absolute;
+  top: 12px;
+  left: 140px;
+  background: rgba(20, 20, 20, 0.85);
+  border: 1px solid #3a3428;
+  border-radius: 20px;
+  padding: 4px 12px;
+  color: #888;
+  font-size: 13px;
+  font-family: monospace;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 5;
+  backdrop-filter: blur(8px);
+  transition: all 0.3s ease;
+}
+#midiStatusBadge.active {
+  border-color: #e8a13d;
+  color: #e8a13d;
+}
+.led-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #555;
+  transition: background 0.15s ease, box-shadow 0.15s ease;
+}
+#midiStatusBadge.active .led-indicator {
+  background: #4caf50;
+  box-shadow: 0 0 8px #4caf50;
+}
+.led-indicator.flash {
+  background: #00e5ff !important;
+  box-shadow: 0 0 12px #00e5ff !important;
+}
+
+/* Main UI Elements */
+#keySelect {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: #1a1a1a;
+  color: #e8a13d;
+  border: 1px solid #3a3428;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 14px;
+  padding: 4px 8px;
+  z-index: 5;
+  cursor: pointer;
+}
+#toneSelect {
+  position: absolute;
+  top: 48px;
+  left: 12px;
+  background: #1a1a1a;
+  color: #e8a13d;
+  border: 1px solid #3a3428;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 14px;
+  padding: 4px 8px;
+  z-index: 5;
+  cursor: pointer;
+}
+#chordDisplay {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #e8a13d;
+  font-size: 52px;
+  font-family: monospace;
+  font-weight: bold;
+  text-shadow: 0 0 12px rgba(232, 161, 61, 0.6);
+  pointer-events: none;
+  text-align: center;
+  white-space: nowrap;
+}
+#midiOutDisplay {
+  font-size: 14px;
+  color: #88c0d0;
+  font-weight: normal;
+  text-shadow: none;
+  margin-top: 4px;
+}
+#volumeMeter {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 3px;
+  pointer-events: none;
+}
+.vol-bar {
+  width: 70px;
+  height: 8px;
+  background: #3a3428;
+  border-radius: 2px;
+}
+.vol-bar.lit {
+  background: #e8a13d;
+}
+#distortionDisplay {
+  position: absolute;
+  top: 105px;
+  right: 12px;
+  color: #e8a13d;
+  font-family: monospace;
+  font-size: 14px;
+  text-align: right;
+  pointer-events: none;
+}
+#qualityDisplay {
+  position: absolute;
+  bottom: 5px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #e8a13d;
+  font-size: 14px;
+  font-family: monospace;
+  pointer-events: none;
+}
+#startOverlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  padding-bottom: 15vh;
+  gap: 16px;
+  cursor: pointer;
+  z-index: 10;
+  backdrop-filter: blur(4px);
+}
+.start-circle {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: #e8a13d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  color: #111;
+  box-shadow: 0 0 20px rgba(232, 161, 61, 0.5);
+  transition: transform 0.2s ease;
+}
+#startOverlay:hover .start-circle {
+  transform: scale(1.1);
+}
+.start-text {
+  color: #fff;
+  font-family: monospace;
+  font-size: 16px;
+  letter-spacing: 0.05em;
+}
+#overlay.dimmed {
+  filter: grayscale(1) brightness(0.6);
+}
+
+/* Modal Overlay Styling */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 30;
+  backdrop-filter: blur(6px);
+  opacity: 1;
+  transition: opacity 0.25s ease;
+}
+.modal-overlay.hidden {
+  display: none;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.modal-card {
+  background: #181818;
+  color: #e0e0e0;
+  border: 1px solid #3a3428;
+  border-radius: 14px;
+  width: min(720px, 92vw);
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 30px rgba(232, 161, 61, 0.15);
+  overflow: hidden;
+}
+
+.modal-header {
+  padding: 16px 20px;
+  background: #222;
+  border-bottom: 1px solid #333;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.modal-header h2 {
+  margin: 0;
+  font-size: 20px;
+  color: #e8a13d;
+  font-weight: 600;
+}
+.close-modal-btn {
+  background: none;
+  border: none;
+  color: #888;
+  font-size: 22px;
+  cursor: pointer;
+  padding: 4px 8px;
+  transition: color 0.2s ease;
+}
+.close-modal-btn:hover {
+  color: #e8a13d;
+}
+
+/* Tabs Navigation */
+.modal-tabs {
+  display: flex;
+  background: #141414;
+  border-bottom: 1px solid #2a2a2a;
+  overflow-x: auto;
+}
+.tab-btn {
+  padding: 12px 18px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: #aaa;
+  font-family: monospace;
+  font-size: 14px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+.tab-btn:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.03);
+}
+.tab-btn.active {
+  color: #e8a13d;
+  border-bottom-color: #e8a13d;
+  background: rgba(232, 161, 61, 0.08);
+}
+
+.modal-body {
+  padding: 20px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.tab-pane {
+  display: none;
+}
+.tab-pane.active {
+  display: block;
+}
+
+/* Form controls & UI elements inside settings */
+.setting-group {
+  background: #222;
+  border: 1px solid #2e2e2e;
+  border-radius: 8px;
+  padding: 14px 18px;
+  margin-bottom: 16px;
+}
+.setting-group h3 {
+  margin-top: 0;
+  margin-bottom: 12px;
+  font-size: 15px;
+  color: #e8a13d;
+  border-bottom: 1px solid #333;
+  padding-bottom: 6px;
+}
+.setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  gap: 12px;
+}
+.setting-row:last-child {
+  margin-bottom: 0;
+}
+.setting-label {
+  font-size: 13px;
+  color: #ccc;
+  font-family: monospace;
+}
+.setting-input, .setting-select {
+  background: #111;
+  color: #e8a13d;
+  border: 1px solid #444;
+  border-radius: 4px;
+  padding: 6px 10px;
+  font-family: monospace;
+  font-size: 13px;
+}
+.setting-input:focus, .setting-select:focus {
+  outline: none;
+  border-color: #e8a13d;
+}
+
+/* Custom Toggle Switch */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 22px;
+}
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.slider {
+  position: absolute;
+  cursor: pointer;
+  inset: 0;
+  background-color: #444;
+  transition: .2s;
+  border-radius: 22px;
+}
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 16px;
+  width: 16px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: .2s;
+  border-radius: 50%;
+}
+input:checked + .slider {
+  background-color: #e8a13d;
+}
+input:checked + .slider:before {
+  transform: translateX(22px);
+}
+
+/* Gesture Mapping Grid */
+.mapping-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 12px;
+}
+.mapping-card {
+  background: #1c1c1c;
+  border: 1px solid #333;
+  border-radius: 6px;
+  padding: 10px 14px;
+}
+.mapping-card-header {
+  font-weight: bold;
+  color: #e8a13d;
+  font-size: 13px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Action Buttons */
+.btn {
+  background: #2a2a2a;
+  color: #fff;
+  border: 1px solid #444;
+  border-radius: 4px;
+  padding: 8px 14px;
+  font-family: monospace;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.btn:hover {
+  background: #3a3a3a;
+  border-color: #e8a13d;
+  color: #e8a13d;
+}
+.btn-primary {
+  background: #e8a13d;
+  color: #111;
+  border-color: #e8a13d;
+  font-weight: bold;
+}
+.btn-primary:hover {
+  background: #ffb752;
+  color: #000;
+}
+.btn-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+  flex-wrap: wrap;
+}
+
+/* Help Content Styling */
+.help-content {
+  background: #1a1a1a;
+  color: white;
+  border: 1px solid #e8a13d;
+  border-radius: 10px;
+  width: min(520px, 90vw);
+  max-height: 80vh;
+  overflow-y: auto;
+  padding: 24px;
+  font-family: monospace;
+}
+.help-content h2, .help-content h3 {
+  color: #e8a13d;
+}
+.help-content a {
+  color: #e8a13d;
+  text-decoration: none;
+}
+.help-content a:hover {
+  color: #ffbf5c;
+}
+</style>
+</head>
+<body>
+<div id="stage">
+  <video id="webcam" autoplay playsinline muted></video>
+  <canvas id="overlay" class="dimmed"></canvas>
+
+  <div id="chordDisplay">--</div>
+  
+  <div id="volumeMeter">
+    <div class="vol-bar" data-index="7"></div>
+    <div class="vol-bar" data-index="6"></div>
+    <div class="vol-bar" data-index="5"></div>
+    <div class="vol-bar" data-index="4"></div>
+    <div class="vol-bar" data-index="3"></div>
+    <div class="vol-bar" data-index="2"></div>
+    <div class="vol-bar" data-index="1"></div>
+    <div class="vol-bar" data-index="0"></div>
+  </div>
+
+  <select id="keySelect">
+    <option value="220.00" data-note="A" selected>Key: A</option>
+    <option value="233.08" data-note="Bb">Key: A#/Bb</option>
+    <option value="246.94" data-note="B">Key: B</option>
+    <option value="261.63" data-note="C">Key: C</option>
+    <option value="277.18" data-note="Db">Key: C#/Db</option>
+    <option value="293.66" data-note="D">Key: D</option>
+    <option value="311.13" data-note="Eb">Key: D#/Eb</option>
+    <option value="329.63" data-note="E">Key: E</option>
+    <option value="349.23" data-note="F">Key: F</option>
+    <option value="369.99" data-note="Gb">Key: F#/Gb</option>
+    <option value="392.00" data-note="G">Key: G</option>
+    <option value="415.30" data-note="Ab">Key: G#/Ab</option>
+  </select>
+
+  <select id="toneSelect">
+    <option value="triangle" selected>Warm Synth</option>
+    <option value="sawtooth">Bright Synth</option>
+    <option value="square">Retro Synth</option>
+  </select>
+
+  <!-- MIDI Status Badge -->
+  <div id="midiStatusBadge" title="Web MIDI Status">
+    <span class="led-indicator" id="midiLed"></span>
+    <span id="midiStatusText">MIDI Initializing...</span>
+  </div>
+
+  <div id="qualityDisplay">--</div>
+  <div id="distortionDisplay">Filter: 0%</div>
+
+  <!-- Bottom Left Controls -->
+  <div class="floating-controls">
+    <button id="settingsButton" class="icon-btn" title="MIDI & Gesture Settings">⚙</button>
+    <button id="helpButton" class="icon-btn" title="Gesture Guide">?</button>
+  </div>
+
+  <!-- Help Guide Modal -->
+  <div id="helpModal" class="modal-overlay hidden">
+    <div class="help-content">
+      <button id="closeHelp" class="close-modal-btn" style="float: right;">✕</button>
+
+      <h2>Gesture Synth Guide</h2>
+
+      <h3>Left Hand</h3>
+      <p><b>Tilt</b><br>
+      Inward → Major Mode<br>
+      Outward → Minor Mode (or map to CC in Settings)</p>
+
+      <p><b>Fingers (Notes / Scale Degree)</b><br>
+      1 → Degree I (Tonic)<br>
+      2 → Degree II<br>
+      3 → Degree III<br>
+      4 → Degree IV<br>
+      5 → Degree V<br>
+      Index + Pinky → Degree VI<br>
+      Index + Pinky + Thumb → Degree VII</p>
+
+      <h3>Right Hand</h3>
+      <p><b>Fingers (Voicing / CC Trigger)</b><br>
+      1 → Root Position / CC<br>
+      2 → 1st Inversion / CC<br>
+      3 → Major/Minor 7th / CC<br>
+      4 → Dominant/Diminished 7th / CC</p>
+
+      <p><b>Octave / Thumb</b><br>
+      Thumb In → Higher Octave<br>
+      Thumb Out → Lower Octave / CC</p>
+
+      <p><b>Tilt</b><br>
+      Continuous CC (default: CC 1 Mod Wheel / DAW Knob Filter)</p>
+
+      <p><b>Height</b><br>
+      Continuous CC (default: CC 7 Volume / Synth Gain)</p>
+
+      <a href="https://www.instagram.com/p/DbH1BACxNCG/" target="_blank" rel="noopener noreferrer">
+        📹 Watch Video Tutorial on Instagram
+      </a>
+    </div>
+  </div>
+
+  <!-- Settings & MIDI Config Modal -->
+  <div id="settingsModal" class="modal-overlay hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2>⚙ Gesture & MIDI Settings</h2>
+        <button id="closeSettings" class="close-modal-btn">✕</button>
+      </div>
+
+      <div class="modal-tabs">
+        <button class="tab-btn active" data-tab="audio-midi">Audio & MIDI</button>
+        <button class="tab-btn" data-tab="left-hand">Left Hand</button>
+        <button class="tab-btn" data-tab="right-hand">Right Hand</button>
+        <button class="tab-btn" data-tab="presets">Presets & JSON</button>
+      </div>
+
+      <div class="modal-body">
+        <!-- TAB 1: AUDIO & MIDI SETUP -->
+        <div id="tab-audio-midi" class="tab-pane active">
+          <div class="setting-group">
+            <h3>🌐 Web MIDI API Output</h3>
+            
+            <div class="setting-row">
+              <span class="setting-label">Enable Web MIDI Output</span>
+              <label class="switch">
+                <input type="checkbox" id="cfgMidiEnabled" checked>
+                <span class="slider"></span>
+              </label>
+            </div>
+
+            <div class="setting-row">
+              <span class="setting-label">Target MIDI Output Device</span>
+              <select id="cfgMidiOutputSelect" class="setting-select">
+                <option value="all">All Available Outputs</option>
+              </select>
+            </div>
+
+            <div class="setting-row">
+              <span class="setting-label">MIDI Channel</span>
+              <select id="cfgMidiChannelSelect" class="setting-select">
+                <!-- Channels 1..16 injected dynamically -->
+              </select>
+            </div>
+          </div>
+
+          <div class="setting-group">
+            <h3>🔊 Browser Audio Synth</h3>
+            
+            <div class="setting-row">
+              <span class="setting-label">Enable Sound in Browser</span>
+              <label class="switch">
+                <input type="checkbox" id="cfgAudioEnabled" checked>
+                <span class="slider"></span>
+              </label>
+            </div>
+
+            <div class="setting-row">
+              <span class="setting-label">Master Browser Synth Gain</span>
+              <input type="range" id="cfgMasterVolume" min="0" max="1" step="0.05" value="0.8" style="accent-color: #e8a13d;">
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 2: LEFT HAND MAPPINGS -->
+        <div id="tab-left-hand" class="tab-pane">
+          <div class="setting-group">
+            <h3>✋ Left Hand Mode Options</h3>
+            <div class="setting-row">
+              <span class="setting-label">Send Chords (Harmonized Tones over MIDI & Synth)</span>
+              <label class="switch">
+                <input type="checkbox" id="cfgLeftSendChords" checked>
+                <span class="slider"></span>
+              </label>
+            </div>
+            <div class="setting-row">
+              <span class="setting-label">Left Hand Transpose (Semitones: -36 to +36)</span>
+              <input type="number" id="cfgLeftTranspose" class="setting-input" min="-36" max="36" value="0" style="width: 70px;">
+            </div>
+          </div>
+
+          <div class="setting-group">
+            <h3>🖐 Left Hand Finger Gestures (Scale Degrees / MIDI Notes)</h3>
+            <div class="mapping-grid" id="leftGestureContainer">
+              <!-- Rendered dynamically -->
+            </div>
+          </div>
+
+          <div class="setting-group">
+            <h3>🔄 Left Hand Tilt Control</h3>
+            <div class="setting-row">
+              <span class="setting-label">Enable Left Hand Tilt Continuous CC</span>
+              <label class="switch">
+                <input type="checkbox" id="cfgLeftTiltEnabled">
+                <span class="slider"></span>
+              </label>
+            </div>
+            <div class="setting-row">
+              <span class="setting-label">Left Tilt CC Number</span>
+              <input type="number" id="cfgLeftTiltCC" class="setting-input" min="0" max="127" value="14" style="width: 70px;">
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 3: RIGHT HAND MAPPINGS -->
+        <div id="tab-right-hand" class="tab-pane">
+          <div class="setting-group">
+            <h3>🎛 Right Hand Tilt -> DAW Knob Control (CC)</h3>
+            <div class="setting-row">
+              <span class="setting-label">Enable Tilt CC (Route to DAW Knob)</span>
+              <label class="switch">
+                <input type="checkbox" id="cfgRightTiltEnabled" checked>
+                <span class="slider"></span>
+              </label>
+            </div>
+            <div class="setting-row">
+              <span class="setting-label">Right Hand Tilt CC Number (default: CC 1 ModWheel)</span>
+              <input type="number" id="cfgRightTiltCC" class="setting-input" min="0" max="127" value="1" style="width: 70px;">
+            </div>
+          </div>
+
+          <div class="setting-group">
+            <h3>📶 Right Hand Height -> Master Volume / Expression (CC)</h3>
+            <div class="setting-row">
+              <span class="setting-label">Enable Height CC</span>
+              <label class="switch">
+                <input type="checkbox" id="cfgRightHeightEnabled" checked>
+                <span class="slider"></span>
+              </label>
+            </div>
+            <div class="setting-row">
+              <span class="setting-label">Right Hand Height CC Number (default: CC 7 Volume)</span>
+              <input type="number" id="cfgRightHeightCC" class="setting-input" min="0" max="127" value="7" style="width: 70px;">
+            </div>
+          </div>
+
+          <div class="setting-group">
+            <h3>✋ Right Hand Finger Triggers</h3>
+            <div class="mapping-grid" id="rightGestureContainer">
+              <!-- Rendered dynamically -->
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 4: PRESETS & DATA -->
+        <div id="tab-presets" class="tab-pane">
+          <div class="setting-group">
+            <h3>💾 Preset Selection & Storage</h3>
+            <div class="setting-row">
+              <span class="setting-label">Active Preset</span>
+              <select id="cfgPresetSelect" class="setting-select">
+                <!-- Presets loaded dynamically -->
+              </select>
+            </div>
+            <div class="btn-row">
+              <button id="btnSavePreset" class="btn btn-primary">Save Current Config</button>
+              <button id="btnResetPresets" class="btn">Reset to Default JSON</button>
+            </div>
+          </div>
+
+          <div class="setting-group">
+            <h3>📁 Import / Export Configuration (`presets.json`)</h3>
+            <p style="font-size: 12px; color: #888; margin-top: 0;">Export your gesture and MIDI mapping definitions as a JSON file or import a custom JSON preset map.</p>
+            <div class="btn-row">
+              <button id="btnExportJSON" class="btn">⬇ Download presets.json</button>
+              <label class="btn" style="cursor: pointer;">
+                ⬆ Upload JSON
+                <input type="file" id="btnImportJSON" accept=".json" style="display: none;">
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Audio Initialization Overlay -->
+  <div id="startOverlay">
+    <div class="start-circle">▶</div>
+    <div class="start-text">Click to enable Audio & MIDI</div>
+  </div>
+</div>
+<script type="module" src="/main.js"></script>
+</body>
+</html>
