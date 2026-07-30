@@ -13,7 +13,11 @@ import {
   savePresetState 
 } from "./config.js";
 import { midiNoteToName } from "./musicTheory.js";
+import { updateKeyboardMidiState } from "./keyboardUI.js";
 import defaultPresetData from "../presets.json";
+
+/** Track whether settings event listeners have been bound to prevent duplicate bindings */
+let isEventsBound = false;
 
 /**
  * Updates the vertical volume bar LED indicators based on current volume.
@@ -39,10 +43,11 @@ export function applyConfigToEngines(midi) {
   midi.setEnabled(currentConfig.midiEnabled);
   midi.setChannel(currentConfig.midiChannel || 1);
   midi.setOutput(currentConfig.selectedMidiOutput || "all");
+  updateKeyboardMidiState(currentConfig.midiEnabled);
 }
 
 /**
- * Populates and binds form fields inside the Settings modal to active preset state.
+ * Populates form fields inside the Settings modal to reflect active preset state.
  *
  * @param {MidiEngine} midi Web MIDI engine instance.
  * @param {SynthEngine} synth Web Audio synth instance.
@@ -59,39 +64,77 @@ export function setupSettingsUI(midi, synth) {
   }
 
   // Sync general controls with currentConfig
-  document.getElementById("cfgMidiEnabled").checked = currentConfig.midiEnabled;
-  document.getElementById("cfgAudioEnabled").checked = currentConfig.audioEnabled;
-  document.getElementById("cfgMidiChannelSelect").value = currentConfig.midiChannel || 1;
-  document.getElementById("cfgMasterVolume").value = currentConfig.masterVolume ?? 0.8;
-  document.getElementById("cfgLeftSendChords").checked = currentConfig.leftHand?.sendChords ?? true;
-  document.getElementById("cfgLeftTranspose").value = currentConfig.leftHand?.transpose ?? 0;
+  const midiEnabledEl = document.getElementById("cfgMidiEnabled");
+  if (midiEnabledEl) midiEnabledEl.checked = currentConfig.midiEnabled;
+
+  const audioEnabledEl = document.getElementById("cfgAudioEnabled");
+  if (audioEnabledEl) audioEnabledEl.checked = currentConfig.audioEnabled;
+
+  if (channelSelect) channelSelect.value = currentConfig.midiChannel || 1;
+
+  const masterVolEl = document.getElementById("cfgMasterVolume");
+  if (masterVolEl) masterVolEl.value = currentConfig.masterVolume ?? 0.8;
+
+  const sendChordsEl = document.getElementById("cfgLeftSendChords");
+  if (sendChordsEl) sendChordsEl.checked = currentConfig.leftHand?.sendChords ?? true;
+
+  const transposeEl = document.getElementById("cfgLeftTranspose");
+  if (transposeEl) transposeEl.value = currentConfig.leftHand?.transpose ?? 0;
 
   // Left hand tilt CC
-  document.getElementById("cfgLeftTiltEnabled").checked = currentConfig.leftHand?.tilt?.enabled ?? true;
-  document.getElementById("cfgLeftTiltCC").value = currentConfig.leftHand?.tilt?.ccNumber ?? 14;
+  const leftTiltEnabledEl = document.getElementById("cfgLeftTiltEnabled");
+  if (leftTiltEnabledEl) leftTiltEnabledEl.checked = currentConfig.leftHand?.tilt?.enabled ?? true;
 
-  // Right hand tilt CC & minVal/maxVal
-  document.getElementById("cfgRightTiltEnabled").checked = currentConfig.rightHand?.tilt?.enabled ?? true;
-  document.getElementById("cfgRightTiltCC").value = currentConfig.rightHand?.tilt?.ccNumber ?? 1;
+  const leftTiltCCEl = document.getElementById("cfgLeftTiltCC");
+  if (leftTiltCCEl) leftTiltCCEl.value = currentConfig.leftHand?.tilt?.ccNumber ?? 14;
+
+  // Right hand tilt CC, mode & minVal/maxVal
+  const rightTiltEnabledEl = document.getElementById("cfgRightTiltEnabled");
+  if (rightTiltEnabledEl) rightTiltEnabledEl.checked = currentConfig.rightHand?.tilt?.enabled ?? true;
+
+  const rightTiltModeEl = document.getElementById("cfgRightTiltMode");
+  if (rightTiltModeEl) rightTiltModeEl.value = currentConfig.rightHand?.tilt?.mode || "normal";
+
+  const rightTiltInvertEl = document.getElementById("cfgRightTiltInvert");
+  if (rightTiltInvertEl) rightTiltInvertEl.checked = currentConfig.rightHand?.tilt?.invert ?? false;
+
+  const rightTiltCCEl = document.getElementById("cfgRightTiltCC");
+  if (rightTiltCCEl) rightTiltCCEl.value = currentConfig.rightHand?.tilt?.ccNumber ?? 1;
+
   const rightTiltMinValEl = document.getElementById("cfgRightTiltMinVal");
   if (rightTiltMinValEl) rightTiltMinValEl.value = currentConfig.rightHand?.tilt?.minVal ?? 0;
+
   const rightTiltMaxValEl = document.getElementById("cfgRightTiltMaxVal");
   if (rightTiltMaxValEl) rightTiltMaxValEl.value = currentConfig.rightHand?.tilt?.maxVal ?? 127;
 
   // Right hand height CC & minVal/maxVal
-  document.getElementById("cfgRightHeightEnabled").checked = currentConfig.rightHand?.height?.enabled ?? true;
-  document.getElementById("cfgRightHeightCC").value = currentConfig.rightHand?.height?.ccNumber ?? 7;
+  const rightHeightEnabledEl = document.getElementById("cfgRightHeightEnabled");
+  if (rightHeightEnabledEl) rightHeightEnabledEl.checked = currentConfig.rightHand?.height?.enabled ?? true;
+
+  const rightHeightCCEl = document.getElementById("cfgRightHeightCC");
+  if (rightHeightCCEl) rightHeightCCEl.value = currentConfig.rightHand?.height?.ccNumber ?? 7;
+
   const rightHeightMinValEl = document.getElementById("cfgRightHeightMinVal");
   if (rightHeightMinValEl) rightHeightMinValEl.value = currentConfig.rightHand?.height?.minVal ?? 0;
+
   const rightHeightMaxValEl = document.getElementById("cfgRightHeightMaxVal");
   if (rightHeightMaxValEl) rightHeightMaxValEl.value = currentConfig.rightHand?.height?.maxVal ?? 127;
 
   // Render Preset dropdown
   const presetSelect = document.getElementById("cfgPresetSelect");
+  const applyPresetRow = document.getElementById("applyPresetRow");
   if (presetSelect) {
+    const activeId = currentConfig.id;
+    const currentVal = presetSelect.value || activeId;
+    const selectedId = presetState.presets.some(p => p.id === currentVal) ? currentVal : activeId;
+
     presetSelect.innerHTML = presetState.presets
-      .map(p => `<option value="${p.id}" ${p.id === currentConfig.id ? "selected" : ""}>${p.name}</option>`)
+      .map(p => `<option value="${p.id}" ${p.id === selectedId ? "selected" : ""}>${p.name}${p.id === activeId ? " (Active)" : ""}</option>`)
       .join("");
+
+    if (applyPresetRow) {
+      applyPresetRow.style.display = (selectedId !== activeId) ? "flex" : "none";
+    }
   }
 
   // Render Left Hand Gestures UI Cards
@@ -129,107 +172,177 @@ export function setupSettingsUI(midi, synth) {
     `).join("");
   }
 
-  // Bind settings change events
+  // Bind settings change listeners ONCE
+  bindSettingsEventsOnce(midi, synth);
+}
+
+/**
+ * Attaches event listeners for settings modal inputs, preset buttons, and tabs EXACTLY ONCE.
+ *
+ * @param {MidiEngine} midi Web MIDI engine instance.
+ * @param {SynthEngine} synth Web Audio synth instance.
+ */
+function bindSettingsEventsOnce(midi, synth) {
+  if (isEventsBound) return;
+  isEventsBound = true;
+
+  // MIDI Enabled
   document.getElementById("cfgMidiEnabled")?.addEventListener("change", (e) => {
+    const currentConfig = getCurrentConfig();
     currentConfig.midiEnabled = e.target.checked;
     midi.setEnabled(currentConfig.midiEnabled);
+    updateKeyboardMidiState(currentConfig.midiEnabled);
   });
 
+  // Audio Enabled
   document.getElementById("cfgAudioEnabled")?.addEventListener("change", (e) => {
+    const currentConfig = getCurrentConfig();
     currentConfig.audioEnabled = e.target.checked;
     if (!currentConfig.audioEnabled) synth.stop();
   });
 
+  // MIDI Channel
   document.getElementById("cfgMidiChannelSelect")?.addEventListener("change", (e) => {
+    const currentConfig = getCurrentConfig();
     currentConfig.midiChannel = parseInt(e.target.value, 10);
     midi.setChannel(currentConfig.midiChannel);
   });
 
+  // MIDI Output Device
   document.getElementById("cfgMidiOutputSelect")?.addEventListener("change", (e) => {
+    const currentConfig = getCurrentConfig();
     currentConfig.selectedMidiOutput = e.target.value;
     midi.setOutput(currentConfig.selectedMidiOutput);
   });
 
+  // Master Volume
   document.getElementById("cfgMasterVolume")?.addEventListener("input", (e) => {
+    const currentConfig = getCurrentConfig();
     currentConfig.masterVolume = parseFloat(e.target.value);
   });
 
+  // Left Hand Send Chords & Transpose
   document.getElementById("cfgLeftSendChords")?.addEventListener("change", (e) => {
+    const currentConfig = getCurrentConfig();
     if (!currentConfig.leftHand) currentConfig.leftHand = {};
     currentConfig.leftHand.sendChords = e.target.checked;
   });
 
   document.getElementById("cfgLeftTranspose")?.addEventListener("change", (e) => {
+    const currentConfig = getCurrentConfig();
     if (!currentConfig.leftHand) currentConfig.leftHand = {};
     currentConfig.leftHand.transpose = parseInt(e.target.value, 10) || 0;
   });
 
+  // Left Hand Tilt
   document.getElementById("cfgLeftTiltEnabled")?.addEventListener("change", (e) => {
+    const currentConfig = getCurrentConfig();
+    if (!currentConfig.leftHand) currentConfig.leftHand = {};
     if (!currentConfig.leftHand.tilt) currentConfig.leftHand.tilt = {};
     currentConfig.leftHand.tilt.enabled = e.target.checked;
   });
 
   document.getElementById("cfgLeftTiltCC")?.addEventListener("change", (e) => {
+    const currentConfig = getCurrentConfig();
+    if (!currentConfig.leftHand) currentConfig.leftHand = {};
+    if (!currentConfig.leftHand.tilt) currentConfig.leftHand.tilt = {};
     currentConfig.leftHand.tilt.ccNumber = parseInt(e.target.value, 10);
   });
 
+  // Right Hand Tilt
   document.getElementById("cfgRightTiltEnabled")?.addEventListener("change", (e) => {
+    const currentConfig = getCurrentConfig();
+    if (!currentConfig.rightHand) currentConfig.rightHand = {};
     if (!currentConfig.rightHand.tilt) currentConfig.rightHand.tilt = {};
     currentConfig.rightHand.tilt.enabled = e.target.checked;
   });
 
+  document.getElementById("cfgRightTiltMode")?.addEventListener("change", (e) => {
+    const currentConfig = getCurrentConfig();
+    if (!currentConfig.rightHand) currentConfig.rightHand = {};
+    if (!currentConfig.rightHand.tilt) currentConfig.rightHand.tilt = {};
+    currentConfig.rightHand.tilt.mode = e.target.value;
+  });
+
+  document.getElementById("cfgRightTiltInvert")?.addEventListener("change", (e) => {
+    const currentConfig = getCurrentConfig();
+    if (!currentConfig.rightHand) currentConfig.rightHand = {};
+    if (!currentConfig.rightHand.tilt) currentConfig.rightHand.tilt = {};
+    currentConfig.rightHand.tilt.invert = e.target.checked;
+  });
+
   document.getElementById("cfgRightTiltCC")?.addEventListener("change", (e) => {
+    const currentConfig = getCurrentConfig();
+    if (!currentConfig.rightHand) currentConfig.rightHand = {};
+    if (!currentConfig.rightHand.tilt) currentConfig.rightHand.tilt = {};
     currentConfig.rightHand.tilt.ccNumber = parseInt(e.target.value, 10);
   });
 
   document.getElementById("cfgRightTiltMinVal")?.addEventListener("change", (e) => {
+    const currentConfig = getCurrentConfig();
+    if (!currentConfig.rightHand) currentConfig.rightHand = {};
     if (!currentConfig.rightHand.tilt) currentConfig.rightHand.tilt = {};
     currentConfig.rightHand.tilt.minVal = Math.max(0, Math.min(127, parseInt(e.target.value, 10) || 0));
   });
 
   document.getElementById("cfgRightTiltMaxVal")?.addEventListener("change", (e) => {
+    const currentConfig = getCurrentConfig();
+    if (!currentConfig.rightHand) currentConfig.rightHand = {};
     if (!currentConfig.rightHand.tilt) currentConfig.rightHand.tilt = {};
     currentConfig.rightHand.tilt.maxVal = Math.max(0, Math.min(127, parseInt(e.target.value, 10) || 127));
   });
 
+  // Right Hand Height
   document.getElementById("cfgRightHeightEnabled")?.addEventListener("change", (e) => {
+    const currentConfig = getCurrentConfig();
+    if (!currentConfig.rightHand) currentConfig.rightHand = {};
     if (!currentConfig.rightHand.height) currentConfig.rightHand.height = {};
     currentConfig.rightHand.height.enabled = e.target.checked;
   });
 
   document.getElementById("cfgRightHeightCC")?.addEventListener("change", (e) => {
+    const currentConfig = getCurrentConfig();
+    if (!currentConfig.rightHand) currentConfig.rightHand = {};
+    if (!currentConfig.rightHand.height) currentConfig.rightHand.height = {};
     currentConfig.rightHand.height.ccNumber = parseInt(e.target.value, 10);
   });
 
   document.getElementById("cfgRightHeightMinVal")?.addEventListener("change", (e) => {
+    const currentConfig = getCurrentConfig();
+    if (!currentConfig.rightHand) currentConfig.rightHand = {};
     if (!currentConfig.rightHand.height) currentConfig.rightHand.height = {};
     currentConfig.rightHand.height.minVal = Math.max(0, Math.min(127, parseInt(e.target.value, 10) || 0));
   });
 
   document.getElementById("cfgRightHeightMaxVal")?.addEventListener("change", (e) => {
+    const currentConfig = getCurrentConfig();
+    if (!currentConfig.rightHand) currentConfig.rightHand = {};
     if (!currentConfig.rightHand.height) currentConfig.rightHand.height = {};
     currentConfig.rightHand.height.maxVal = Math.max(0, Math.min(127, parseInt(e.target.value, 10) || 127));
   });
 
-  // Dynamic gesture note/cc inputs binding
-  document.querySelectorAll(".left-note-input").forEach(input => {
-    input.addEventListener("change", (e) => {
+  // Event Delegation for Left Hand Gesture Note Inputs
+  document.getElementById("leftGestureContainer")?.addEventListener("change", (e) => {
+    if (e.target && e.target.classList.contains("left-note-input")) {
       const key = e.target.dataset.key;
       const val = parseInt(e.target.value, 10);
+      const currentConfig = getCurrentConfig();
       if (currentConfig.leftHand?.gestures[key]) {
         currentConfig.leftHand.gestures[key].note = val;
       }
-    });
+    }
   });
 
-  document.querySelectorAll(".right-cc-input").forEach(input => {
-    input.addEventListener("change", (e) => {
+  // Event Delegation for Right Hand Gesture CC Inputs
+  document.getElementById("rightGestureContainer")?.addEventListener("change", (e) => {
+    if (e.target && e.target.classList.contains("right-cc-input")) {
       const key = e.target.dataset.key;
       const val = parseInt(e.target.value, 10);
+      const currentConfig = getCurrentConfig();
       if (currentConfig.rightHand?.gestures[key]) {
         currentConfig.rightHand.gestures[key].ccNumber = val;
       }
-    });
+    }
   });
 
   // Tab switching logic
@@ -243,19 +356,61 @@ export function setupSettingsUI(midi, synth) {
     });
   });
 
-  // Preset Select Change
-  presetSelect?.addEventListener("change", (e) => {
+  // Preset Select Change - Shows Apply Preset button if different from active
+  document.getElementById("cfgPresetSelect")?.addEventListener("change", (e) => {
+    const selectedId = e.target.value;
+    const currentConfig = getCurrentConfig();
+    const applyPresetRow = document.getElementById("applyPresetRow");
+    if (applyPresetRow) {
+      applyPresetRow.style.display = (selectedId !== currentConfig.id) ? "flex" : "none";
+    }
+  });
+
+  // Apply Selected Preset Button
+  document.getElementById("btnApplyPreset")?.addEventListener("click", () => {
+    const presetSelect = document.getElementById("cfgPresetSelect");
+    if (!presetSelect) return;
+
+    const selectedId = presetSelect.value;
     const pState = getPresetState();
-    pState.activePresetId = e.target.value;
+    pState.activePresetId = selectedId;
+
+    savePresetState();
     loadPresetState();
     setupSettingsUI(midi, synth);
     applyConfigToEngines(midi);
+
+    const activeCfg = getCurrentConfig();
+    alert(`Preset "${activeCfg.name}" applied successfully!`);
   });
 
-  // Save Preset Button
+  // Save Current Preset Button
   document.getElementById("btnSavePreset")?.addEventListener("click", () => {
+    const currentConfig = getCurrentConfig();
     savePresetState();
-    alert("Configuration saved successfully!");
+    alert(`Configuration saved for preset "${currentConfig.name}"!`);
+  });
+
+  // Save As New Preset Button
+  document.getElementById("btnSaveAsPreset")?.addEventListener("click", () => {
+    const currentConfig = getCurrentConfig();
+    const presetName = prompt("Enter a name for your new preset:", `${currentConfig.name} Copy`);
+    if (!presetName || !presetName.trim()) return;
+
+    const presetState = getPresetState();
+    const newId = "preset_" + Date.now();
+    const newPreset = JSON.parse(JSON.stringify(currentConfig));
+    newPreset.id = newId;
+    newPreset.name = presetName.trim();
+
+    presetState.presets.push(newPreset);
+    presetState.activePresetId = newId;
+
+    savePresetState();
+    loadPresetState();
+    setupSettingsUI(midi, synth);
+    applyConfigToEngines(midi);
+    alert(`New preset "${newPreset.name}" created and saved successfully!`);
   });
 
   // Reset Presets Button
@@ -266,6 +421,7 @@ export function setupSettingsUI(midi, synth) {
       setCurrentConfig(defaultPresetData.presets[0]);
       setupSettingsUI(midi, synth);
       applyConfigToEngines(midi);
+      alert("Presets reset to default.");
     }
   });
 

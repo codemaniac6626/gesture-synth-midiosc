@@ -1,0 +1,824 @@
+:root {
+  /* ==========================================================================
+     ORIGINAL COLOR PALETTE (COMMENTED OUT FOR EASY TOGGLING)
+     ==========================================================================
+  --primary-color: #e8a13d;
+  --primary-rgb: 232, 161, 61;
+  --primary-hover: #ffb752;
+  --primary-active: #ffc875;
+  --primary-dark: #b8751e;
+  --primary-border: #3a3428;
+
+  --secondary-color: #00e5ff;
+  --secondary-alt: #88c0d0;
+  --success-color: #4caf50;
+
+  --bg-dark: #111111;
+  --surface-card: #181818;
+  --surface-group: #222222;
+  --surface-tab: #141414;
+  --surface-card-alt: #1c1c1c;
+  --border-dark: #333333;
+  --border-input: #444444;
+  --text-main: #e0e0e0;
+  --text-muted: #888888;
+  --text-dim: #aaaaaa;
+     ========================================================================== */
+
+  /* ==========================================================================
+     COLOR PALETTE 2 (ColorHunt: https://colorhunt.co/palette/8b1e2de63946f4d35e457b9d) - COMMENTED
+     ==========================================================================
+  --primary-color: #f4d35e;
+  --primary-rgb: 244, 211, 94;
+  --primary-hover: #fce27a;
+  --primary-active: #ffe892;
+  --primary-dark: #8b1e2d;
+  --primary-border: #4d1822;
+
+  --secondary-color: #e63946;
+  --secondary-alt: #457b9d;
+  --success-color: #52b788;
+
+  --bg-dark: #120b0e;
+  --surface-card: #1c1215;
+  --surface-group: #24171b;
+  --surface-tab: #160e11;
+  --surface-card-alt: #201418;
+  --border-dark: #3d1c23;
+  --border-input: #5c2630;
+  --text-main: #f4ebd0;
+  --text-muted: #a38d93;
+  --text-dim: #c4b5b8;
+     ========================================================================== */
+
+  /* ==========================================================================
+     ACTIVE COLOR PALETTE (ColorHunt: https://colorhunt.co/palette/607456eee0ccba6a4c7b2525)
+     #607456 (Sage Green) | #eee0cc (Cream Linen) | #ba6a4c (Terracotta Rust) | #7b2525 (Deep Mahogany)
+     ========================================================================== */
+  /* Primary Accent: Terracotta Rust (#ba6a4c) */
+  --primary-color: #d07e60;
+  --primary-rgb: 186, 106, 76;
+  --primary-hover: #cf7b5c;
+  --primary-active: #e28e6f;
+  --primary-dark: #471414;
+  --primary-border: #4d231a;
+
+  /* Secondary Accent & Flash Colors: Sage Green (#607456) */
+  --secondary-color: #607456;
+  --secondary-alt: #8aa37d;
+  --success-color: #607456;
+
+  /* Dark Theme Surfaces & Neutral Tones with Soft Cream Text (#eee0cc) */
+  --bg-dark: #120a0a;
+  --surface-card: #1c1010;
+  --surface-group: #241616;
+  --surface-tab: #160b0b;
+  --surface-card-alt: #201212;
+  --border-dark: #3d1b1b;
+  --border-input: #5c2626;
+  --text-main: #eee0cc;
+  --text-muted: #a89a88;
+  --text-dim: #cca895;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  background: var(--bg-dark);
+  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace;
+}
+
+#stage {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100dvh;
+}
+
+#webcam {
+  display: none;
+}
+
+#overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* Floating Controls Bar at Bottom Left */
+.floating-controls {
+  position: absolute;
+  bottom: 16px;
+  left: 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  z-index: 6;
+}
+
+.icon-btn {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 1px solid var(--primary-border);
+  background: rgba(20, 20, 20, 0.85);
+  color: var(--primary-color);
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(8px);
+}
+
+.icon-btn:hover {
+  background: rgba(40, 40, 40, 0.95);
+  border-color: var(--primary-color);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(var(--primary-rgb), 0.3);
+}
+
+/* MIDI Status Indicator Pill */
+#midiStatusBadge {
+  position: absolute;
+  top: 12px;
+  left: 140px;
+  background: rgba(20, 20, 20, 0.85);
+  border: 1px solid var(--primary-border);
+  border-radius: 20px;
+  padding: 4px 12px;
+  color: var(--text-muted);
+  font-size: 13px;
+  font-family: monospace;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 5;
+  backdrop-filter: blur(8px);
+  transition: all 0.3s ease;
+}
+
+#midiStatusBadge.active {
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+}
+
+.led-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #555;
+  transition: background 0.15s ease, box-shadow 0.15s ease;
+}
+
+#midiStatusBadge.active .led-indicator {
+  background: var(--success-color);
+  box-shadow: 0 0 8px var(--success-color);
+}
+
+.led-indicator.flash {
+  background: var(--secondary-color) !important;
+  box-shadow: 0 0 12px var(--secondary-color) !important;
+}
+
+/* Main UI Elements */
+#keySelect {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: #1a1a1a;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-border);
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 14px;
+  padding: 4px 8px;
+  z-index: 5;
+  cursor: pointer;
+}
+
+#toneSelect {
+  position: absolute;
+  top: 48px;
+  left: 12px;
+  background: #1a1a1a;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-border);
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 14px;
+  padding: 4px 8px;
+  z-index: 5;
+  cursor: pointer;
+}
+
+#chordDisplay {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: var(--primary-color);
+  font-size: 52px;
+  font-family: monospace;
+  font-weight: bold;
+  text-shadow: 0 0 12px rgba(var(--primary-rgb), 0.6);
+  pointer-events: none;
+  text-align: center;
+  white-space: nowrap;
+}
+
+#midiOutDisplay {
+  font-size: 14px;
+  color: var(--secondary-alt);
+  font-weight: normal;
+  text-shadow: none;
+  margin-top: 4px;
+}
+
+#volumeMeter {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 3px;
+  pointer-events: none;
+}
+
+.vol-bar {
+  width: 70px;
+  height: 8px;
+  background: var(--primary-border);
+  border-radius: 2px;
+}
+
+.vol-bar.lit {
+  background: var(--primary-color);
+}
+
+#distortionDisplay {
+  position: absolute;
+  top: 105px;
+  right: 12px;
+  color: var(--primary-color);
+  font-family: monospace;
+  font-size: 14px;
+  text-align: right;
+  pointer-events: none;
+}
+
+#qualityDisplay {
+  position: absolute;
+  bottom: 5px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: var(--primary-color);
+  font-size: 14px;
+  font-family: monospace;
+  pointer-events: none;
+}
+
+#startOverlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  padding-bottom: 15vh;
+  gap: 16px;
+  cursor: pointer;
+  z-index: 10;
+  backdrop-filter: blur(4px);
+}
+
+.start-circle {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: var(--primary-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  color: var(--bg-dark);
+  box-shadow: 0 0 20px rgba(var(--primary-rgb), 0.5);
+  transition: transform 0.2s ease;
+}
+
+#startOverlay:hover .start-circle {
+  transform: scale(1.1);
+}
+
+.start-text {
+  color: #fff;
+  font-family: monospace;
+  font-size: 16px;
+  letter-spacing: 0.05em;
+}
+
+#overlay.dimmed {
+  filter: grayscale(1) brightness(0.6);
+}
+
+/* Modal Overlay Styling */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 30;
+  backdrop-filter: blur(6px);
+  opacity: 1;
+  transition: opacity 0.25s ease;
+}
+
+.modal-overlay.hidden {
+  display: none;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.modal-card {
+  background: var(--surface-card);
+  color: var(--text-main);
+  border: 1px solid var(--primary-border);
+  border-radius: 14px;
+  width: min(760px, 94vw);
+  height: min(640px, 85vh);
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 30px rgba(var(--primary-rgb), 0.15);
+  overflow: hidden;
+}
+
+.modal-header {
+  padding: 16px 20px;
+  background: var(--surface-group);
+  border-bottom: 1px solid var(--border-dark);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 20px;
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+.close-modal-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 22px;
+  cursor: pointer;
+  padding: 4px 8px;
+  transition: color 0.2s ease;
+}
+
+.close-modal-btn:hover {
+  color: var(--primary-color);
+}
+
+/* Tabs Navigation */
+.modal-tabs {
+  display: flex;
+  background: var(--surface-tab);
+  border-bottom: 1px solid #2a2a2a;
+  overflow-x: auto;
+  flex-shrink: 0;
+  scrollbar-width: thin;
+  scrollbar-color: var(--primary-border) transparent;
+}
+
+.tab-btn {
+  padding: 12px 18px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--text-dim);
+  font-family: monospace;
+  font-size: 14px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.tab-btn:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.tab-btn.active {
+  color: var(--primary-color);
+  border-bottom-color: var(--primary-color);
+  background: rgba(var(--primary-rgb), 0.08);
+}
+
+.modal-body {
+  padding: 20px;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+  scrollbar-width: thin;
+  scrollbar-color: var(--primary-border) transparent;
+}
+
+.modal-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.modal-body::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.modal-body::-webkit-scrollbar-thumb {
+  background: var(--primary-border);
+  border-radius: 3px;
+}
+
+.modal-body::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-color);
+}
+
+.tab-pane {
+  display: none;
+}
+
+.tab-pane.active {
+  display: block;
+}
+
+/* Form controls & UI elements inside settings */
+.setting-group {
+  background: var(--surface-group);
+  border: 1px solid #2e2e2e;
+  border-radius: 8px;
+  padding: 14px 18px;
+  margin-bottom: 16px;
+}
+
+.setting-group h3 {
+  margin-top: 0;
+  margin-bottom: 12px;
+  font-size: 15px;
+  color: var(--primary-color);
+  border-bottom: 1px solid var(--border-dark);
+  padding-bottom: 6px;
+}
+
+.setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  gap: 12px;
+}
+
+.setting-row:last-child {
+  margin-bottom: 0;
+}
+
+.setting-label {
+  font-size: 13px;
+  color: #ccc;
+  font-family: monospace;
+}
+
+.setting-input,
+.setting-select {
+  background: var(--bg-dark);
+  color: var(--primary-color);
+  border: 1px solid var(--border-input);
+  border-radius: 4px;
+  padding: 6px 10px;
+  font-family: monospace;
+  font-size: 13px;
+}
+
+.setting-input:focus,
+.setting-select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+}
+
+/* Custom Toggle Switch */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 22px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  inset: 0;
+  background-color: var(--border-input);
+  transition: .2s;
+  border-radius: 22px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 16px;
+  width: 16px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: .2s;
+  border-radius: 50%;
+}
+
+input:checked+.slider {
+  background-color: var(--primary-color);
+}
+
+input:checked+.slider:before {
+  transform: translateX(22px);
+}
+
+/* Gesture Mapping Grid */
+.mapping-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 12px;
+}
+
+.mapping-card {
+  background: var(--surface-card-alt);
+  border: 1px solid var(--border-dark);
+  border-radius: 6px;
+  padding: 10px 14px;
+}
+
+.mapping-card-header {
+  font-weight: bold;
+  color: var(--primary-color);
+  font-size: 13px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Action Buttons */
+.btn {
+  background: #2a2a2a;
+  color: #fff;
+  border: 1px solid var(--border-input);
+  border-radius: 4px;
+  padding: 8px 14px;
+  font-family: monospace;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn:hover {
+  background: #3a3a3a;
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+}
+
+.btn-primary {
+  background: var(--primary-color);
+  color: var(--bg-dark);
+  border-color: var(--primary-color);
+  font-weight: bold;
+}
+
+.btn-primary:hover {
+  background: var(--primary-hover);
+  color: #000;
+}
+
+.btn-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+  flex-wrap: wrap;
+}
+
+/* Help Content Styling */
+.help-content {
+  background: #1a1a1a;
+  color: white;
+  border: 1px solid var(--primary-color);
+  border-radius: 10px;
+  width: min(520px, 90vw);
+  max-height: 80vh;
+  overflow-y: auto;
+  padding: 24px;
+  font-family: monospace;
+}
+
+.help-content h2,
+.help-content h3 {
+  color: var(--primary-color);
+}
+
+.help-content a {
+  color: var(--primary-color);
+  text-decoration: none;
+}
+
+.help-content a:hover {
+  color: var(--primary-hover);
+}
+
+/* Collapsible Keyboard Footer Styling */
+.keyboard-footer {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(880px, 96vw);
+  z-index: 20;
+  background: rgba(18, 18, 18, 0.92);
+  border: 1px solid var(--primary-border);
+  border-bottom: none;
+  border-radius: 12px 12px 0 0;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.6);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  user-select: none;
+}
+
+.keyboard-footer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 14px;
+  background: rgba(28, 28, 28, 0.95);
+  border-radius: 12px 12px 0 0;
+  cursor: pointer;
+  font-family: monospace;
+  font-size: 13px;
+  color: var(--primary-color);
+}
+
+.keyboard-footer-header:hover {
+  background: rgba(40, 40, 40, 0.95);
+}
+
+.keyboard-toggle-btn {
+  background: none;
+  border: none;
+  color: var(--primary-color);
+  font-family: monospace;
+  font-size: 12px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.keyboard-status-text {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-family: monospace;
+}
+
+.keyboard-container {
+  position: relative;
+  height: 90px;
+  padding: 8px 12px 12px 12px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  overflow-x: auto;
+  overflow-y: hidden;
+  transition: max-height 0.3s ease, opacity 0.3s ease, padding 0.3s ease;
+  max-height: 120px;
+}
+
+.keyboard-footer.collapsed .keyboard-container {
+  max-height: 0;
+  height: 0;
+  padding: 0 12px;
+  opacity: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.keyboard-keys-wrapper {
+  position: relative;
+  display: flex;
+  height: 75px;
+}
+
+.key-white {
+  width: 24px;
+  height: 75px;
+  background: linear-gradient(180deg, #e0e0e0 0%, #ffffff 100%);
+  border: 1px solid #222;
+  border-radius: 0 0 4px 4px;
+  box-sizing: border-box;
+  position: relative;
+  z-index: 1;
+  cursor: pointer;
+  transition: background 0.1s ease, box-shadow 0.1s ease, transform 0.05s ease;
+}
+
+.key-white:hover {
+  background: #f0f0f0;
+}
+
+.key-white.active {
+  background: linear-gradient(180deg, var(--primary-active) 0%, var(--primary-color) 100%) !important;
+  box-shadow: 0 0 12px rgba(var(--primary-rgb), 0.9), inset 0 -2px 6px rgba(0, 0, 0, 0.3);
+  transform: translateY(2px);
+}
+
+.key-black {
+  width: 14px;
+  height: 46px;
+  background: linear-gradient(180deg, #333 0%, #111 100%);
+  border: 1px solid #000;
+  border-radius: 0 0 3px 3px;
+  box-sizing: border-box;
+  position: absolute;
+  z-index: 2;
+  cursor: pointer;
+  transition: background 0.1s ease, box-shadow 0.1s ease, transform 0.05s ease;
+}
+
+.key-black:hover {
+  background: #444;
+}
+
+.key-black.active {
+  background: linear-gradient(180deg, var(--primary-color) 0%, var(--primary-dark) 100%) !important;
+  box-shadow: 0 0 12px rgba(var(--primary-rgb), 0.9), inset 0 -2px 6px rgba(0, 0, 0, 0.5);
+  transform: translateY(2px);
+}
+
+.key-label {
+  position: absolute;
+  bottom: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 8px;
+  font-family: monospace;
+  color: #666;
+  pointer-events: none;
+}
+
+.key-white.active .key-label {
+  color: #111;
+  font-weight: bold;
+}
+
+.key-black.active .key-label {
+  color: #fff;
+  font-weight: bold;
+}
+
+/* Keyboard MIDI Disabled Overlay */
+.keyboard-disabled-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 15, 15, 0.85);
+  backdrop-filter: blur(3px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  font-family: monospace;
+  font-size: 12px;
+  z-index: 10;
+  border-radius: 0 0 12px 12px;
+  pointer-events: all;
+  letter-spacing: 0.05em;
+}
+
+.keyboard-footer.midi-disabled {
+  opacity: 0.7;
+}
+
+.keyboard-footer.midi-disabled .key-white,
+.keyboard-footer.midi-disabled .key-black {
+  pointer-events: none !important;
+}

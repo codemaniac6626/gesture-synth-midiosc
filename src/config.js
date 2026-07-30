@@ -59,6 +59,8 @@ export function loadPresetState() {
       if (p.rightHand.tilt) {
         if (p.rightHand.tilt.minVal === undefined) p.rightHand.tilt.minVal = 0;
         if (p.rightHand.tilt.maxVal === undefined) p.rightHand.tilt.maxVal = 127;
+        if (!p.rightHand.tilt.mode) p.rightHand.tilt.mode = "normal";
+        if (p.rightHand.tilt.invert === undefined) p.rightHand.tilt.invert = false;
       }
       if (p.rightHand.height) {
         if (p.rightHand.height.minVal === undefined) p.rightHand.height.minVal = 0;

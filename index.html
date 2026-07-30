@@ -4,494 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>Gesture Synth - Web MIDI & Gesture Control</title>
-<style>
-html, body {
-  margin: 0;
-  height: 100%;
-  background: #111;
-  overflow: hidden;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace;
-}
-#stage {
-  position: fixed;
-  inset: 0;
-  width: 100vw;
-  height: 100dvh;
-}
-#webcam {
-  display: none;
-}
-#overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-}
-
-/* Floating Controls Bar at Bottom Left */
-.floating-controls {
-  position: absolute;
-  bottom: 16px;
-  left: 16px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  z-index: 6;
-}
-
-.icon-btn {
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  border: 1px solid #3a3428;
-  background: rgba(20, 20, 20, 0.85);
-  color: #e8a13d;
-  font-size: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  backdrop-filter: blur(8px);
-}
-.icon-btn:hover {
-  background: rgba(40, 40, 40, 0.95);
-  border-color: #e8a13d;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(232, 161, 61, 0.3);
-}
-
-/* MIDI Status Indicator Pill */
-#midiStatusBadge {
-  position: absolute;
-  top: 12px;
-  left: 140px;
-  background: rgba(20, 20, 20, 0.85);
-  border: 1px solid #3a3428;
-  border-radius: 20px;
-  padding: 4px 12px;
-  color: #888;
-  font-size: 13px;
-  font-family: monospace;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  z-index: 5;
-  backdrop-filter: blur(8px);
-  transition: all 0.3s ease;
-}
-#midiStatusBadge.active {
-  border-color: #e8a13d;
-  color: #e8a13d;
-}
-.led-indicator {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #555;
-  transition: background 0.15s ease, box-shadow 0.15s ease;
-}
-#midiStatusBadge.active .led-indicator {
-  background: #4caf50;
-  box-shadow: 0 0 8px #4caf50;
-}
-.led-indicator.flash {
-  background: #00e5ff !important;
-  box-shadow: 0 0 12px #00e5ff !important;
-}
-
-/* Main UI Elements */
-#keySelect {
-  position: absolute;
-  top: 12px;
-  left: 12px;
-  background: #1a1a1a;
-  color: #e8a13d;
-  border: 1px solid #3a3428;
-  border-radius: 4px;
-  font-family: monospace;
-  font-size: 14px;
-  padding: 4px 8px;
-  z-index: 5;
-  cursor: pointer;
-}
-#toneSelect {
-  position: absolute;
-  top: 48px;
-  left: 12px;
-  background: #1a1a1a;
-  color: #e8a13d;
-  border: 1px solid #3a3428;
-  border-radius: 4px;
-  font-family: monospace;
-  font-size: 14px;
-  padding: 4px 8px;
-  z-index: 5;
-  cursor: pointer;
-}
-#chordDisplay {
-  position: absolute;
-  bottom: 16px;
-  left: 50%;
-  transform: translateX(-50%);
-  color: #e8a13d;
-  font-size: 52px;
-  font-family: monospace;
-  font-weight: bold;
-  text-shadow: 0 0 12px rgba(232, 161, 61, 0.6);
-  pointer-events: none;
-  text-align: center;
-  white-space: nowrap;
-}
-#midiOutDisplay {
-  font-size: 14px;
-  color: #88c0d0;
-  font-weight: normal;
-  text-shadow: none;
-  margin-top: 4px;
-}
-#volumeMeter {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  display: flex;
-  flex-direction: column-reverse;
-  gap: 3px;
-  pointer-events: none;
-}
-.vol-bar {
-  width: 70px;
-  height: 8px;
-  background: #3a3428;
-  border-radius: 2px;
-}
-.vol-bar.lit {
-  background: #e8a13d;
-}
-#distortionDisplay {
-  position: absolute;
-  top: 105px;
-  right: 12px;
-  color: #e8a13d;
-  font-family: monospace;
-  font-size: 14px;
-  text-align: right;
-  pointer-events: none;
-}
-#qualityDisplay {
-  position: absolute;
-  bottom: 5px;
-  left: 50%;
-  transform: translateX(-50%);
-  color: #e8a13d;
-  font-size: 14px;
-  font-family: monospace;
-  pointer-events: none;
-}
-#startOverlay {
-  position: absolute;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.65);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-end;
-  padding-bottom: 15vh;
-  gap: 16px;
-  cursor: pointer;
-  z-index: 10;
-  backdrop-filter: blur(4px);
-}
-.start-circle {
-  width: 72px;
-  height: 72px;
-  border-radius: 50%;
-  background: #e8a13d;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 26px;
-  color: #111;
-  box-shadow: 0 0 20px rgba(232, 161, 61, 0.5);
-  transition: transform 0.2s ease;
-}
-#startOverlay:hover .start-circle {
-  transform: scale(1.1);
-}
-.start-text {
-  color: #fff;
-  font-family: monospace;
-  font-size: 16px;
-  letter-spacing: 0.05em;
-}
-#overlay.dimmed {
-  filter: grayscale(1) brightness(0.6);
-}
-
-/* Modal Overlay Styling */
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.8);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 30;
-  backdrop-filter: blur(6px);
-  opacity: 1;
-  transition: opacity 0.25s ease;
-}
-.modal-overlay.hidden {
-  display: none;
-  opacity: 0;
-  pointer-events: none;
-}
-
-.modal-card {
-  background: #181818;
-  color: #e0e0e0;
-  border: 1px solid #3a3428;
-  border-radius: 14px;
-  width: min(720px, 92vw);
-  max-height: 85vh;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 30px rgba(232, 161, 61, 0.15);
-  overflow: hidden;
-}
-
-.modal-header {
-  padding: 16px 20px;
-  background: #222;
-  border-bottom: 1px solid #333;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-.modal-header h2 {
-  margin: 0;
-  font-size: 20px;
-  color: #e8a13d;
-  font-weight: 600;
-}
-.close-modal-btn {
-  background: none;
-  border: none;
-  color: #888;
-  font-size: 22px;
-  cursor: pointer;
-  padding: 4px 8px;
-  transition: color 0.2s ease;
-}
-.close-modal-btn:hover {
-  color: #e8a13d;
-}
-
-/* Tabs Navigation */
-.modal-tabs {
-  display: flex;
-  background: #141414;
-  border-bottom: 1px solid #2a2a2a;
-  overflow-x: auto;
-}
-.tab-btn {
-  padding: 12px 18px;
-  background: none;
-  border: none;
-  border-bottom: 2px solid transparent;
-  color: #aaa;
-  font-family: monospace;
-  font-size: 14px;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: all 0.2s ease;
-}
-.tab-btn:hover {
-  color: #fff;
-  background: rgba(255, 255, 255, 0.03);
-}
-.tab-btn.active {
-  color: #e8a13d;
-  border-bottom-color: #e8a13d;
-  background: rgba(232, 161, 61, 0.08);
-}
-
-.modal-body {
-  padding: 20px;
-  overflow-y: auto;
-  flex: 1;
-}
-
-.tab-pane {
-  display: none;
-}
-.tab-pane.active {
-  display: block;
-}
-
-/* Form controls & UI elements inside settings */
-.setting-group {
-  background: #222;
-  border: 1px solid #2e2e2e;
-  border-radius: 8px;
-  padding: 14px 18px;
-  margin-bottom: 16px;
-}
-.setting-group h3 {
-  margin-top: 0;
-  margin-bottom: 12px;
-  font-size: 15px;
-  color: #e8a13d;
-  border-bottom: 1px solid #333;
-  padding-bottom: 6px;
-}
-.setting-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 10px;
-  gap: 12px;
-}
-.setting-row:last-child {
-  margin-bottom: 0;
-}
-.setting-label {
-  font-size: 13px;
-  color: #ccc;
-  font-family: monospace;
-}
-.setting-input, .setting-select {
-  background: #111;
-  color: #e8a13d;
-  border: 1px solid #444;
-  border-radius: 4px;
-  padding: 6px 10px;
-  font-family: monospace;
-  font-size: 13px;
-}
-.setting-input:focus, .setting-select:focus {
-  outline: none;
-  border-color: #e8a13d;
-}
-
-/* Custom Toggle Switch */
-.switch {
-  position: relative;
-  display: inline-block;
-  width: 44px;
-  height: 22px;
-}
-.switch input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-.slider {
-  position: absolute;
-  cursor: pointer;
-  inset: 0;
-  background-color: #444;
-  transition: .2s;
-  border-radius: 22px;
-}
-.slider:before {
-  position: absolute;
-  content: "";
-  height: 16px;
-  width: 16px;
-  left: 3px;
-  bottom: 3px;
-  background-color: white;
-  transition: .2s;
-  border-radius: 50%;
-}
-input:checked + .slider {
-  background-color: #e8a13d;
-}
-input:checked + .slider:before {
-  transform: translateX(22px);
-}
-
-/* Gesture Mapping Grid */
-.mapping-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 12px;
-}
-.mapping-card {
-  background: #1c1c1c;
-  border: 1px solid #333;
-  border-radius: 6px;
-  padding: 10px 14px;
-}
-.mapping-card-header {
-  font-weight: bold;
-  color: #e8a13d;
-  font-size: 13px;
-  margin-bottom: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-/* Action Buttons */
-.btn {
-  background: #2a2a2a;
-  color: #fff;
-  border: 1px solid #444;
-  border-radius: 4px;
-  padding: 8px 14px;
-  font-family: monospace;
-  font-size: 13px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-.btn:hover {
-  background: #3a3a3a;
-  border-color: #e8a13d;
-  color: #e8a13d;
-}
-.btn-primary {
-  background: #e8a13d;
-  color: #111;
-  border-color: #e8a13d;
-  font-weight: bold;
-}
-.btn-primary:hover {
-  background: #ffb752;
-  color: #000;
-}
-.btn-row {
-  display: flex;
-  gap: 10px;
-  margin-top: 14px;
-  flex-wrap: wrap;
-}
-
-/* Help Content Styling */
-.help-content {
-  background: #1a1a1a;
-  color: white;
-  border: 1px solid #e8a13d;
-  border-radius: 10px;
-  width: min(520px, 90vw);
-  max-height: 80vh;
-  overflow-y: auto;
-  padding: 24px;
-  font-family: monospace;
-}
-.help-content h2, .help-content h3 {
-  color: #e8a13d;
-}
-.help-content a {
-  color: #e8a13d;
-  text-decoration: none;
-}
-.help-content a:hover {
-  color: #ffbf5c;
-}
-</style>
+<link rel="stylesheet" href="/style.css" />
 </head>
 <body>
 <div id="stage">
@@ -545,6 +58,25 @@ input:checked + .slider:before {
   <div class="floating-controls">
     <button id="settingsButton" class="icon-btn" title="MIDI & Gesture Settings">⚙</button>
     <button id="helpButton" class="icon-btn" title="Gesture Guide">?</button>
+  </div>
+
+  <!-- Collapsible Keyboard UI Strip Footer -->
+  <div id="keyboardFooter" class="keyboard-footer">
+    <div id="keyboardHeader" class="keyboard-footer-header" title="Toggle MIDI Keyboard View">
+      <button id="keyboardToggleBtn" class="keyboard-toggle-btn">
+        <span>🎹 MIDI Keyboard</span>
+        <span id="keyboardToggleIcon">▼</span>
+      </button>
+      <span id="keyboardStatusText" class="keyboard-status-text">C3 - C6 (Active Output)</span>
+    </div>
+    <div id="keyboardContainer" class="keyboard-container">
+      <div id="keyboardDisabledOverlay" class="keyboard-disabled-overlay" style="display: none;">
+        🚫 MIDI Output Disabled in App Settings
+      </div>
+      <div id="keyboardKeysWrapper" class="keyboard-keys-wrapper">
+        <!-- Dynamically generated C3 to C6 keys -->
+      </div>
+    </div>
   </div>
 
   <!-- Help Guide Modal -->
@@ -648,7 +180,7 @@ input:checked + .slider:before {
 
             <div class="setting-row">
               <span class="setting-label">Master Browser Synth Gain</span>
-              <input type="range" id="cfgMasterVolume" min="0" max="1" step="0.05" value="0.8" style="accent-color: #e8a13d;">
+              <input type="range" id="cfgMasterVolume" min="0" max="1" step="0.05" value="0.8" style="accent-color: var(--primary-color);">
             </div>
           </div>
         </div>
@@ -701,6 +233,20 @@ input:checked + .slider:before {
               <span class="setting-label">Enable Tilt CC (Route to DAW Knob)</span>
               <label class="switch">
                 <input type="checkbox" id="cfgRightTiltEnabled" checked>
+                <span class="slider"></span>
+              </label>
+            </div>
+            <div class="setting-row">
+              <span class="setting-label">Tilt Control Mode</span>
+              <select id="cfgRightTiltMode" class="setting-select">
+                <option value="normal">Normal (Center = 50%)</option>
+                <option value="bipolar">Bipolar (Center = Min Value)</option>
+              </select>
+            </div>
+            <div class="setting-row">
+              <span class="setting-label">Invert Tilt Direction</span>
+              <label class="switch">
+                <input type="checkbox" id="cfgRightTiltInvert">
                 <span class="slider"></span>
               </label>
             </div>
@@ -759,9 +305,14 @@ input:checked + .slider:before {
                 <!-- Presets loaded dynamically -->
               </select>
             </div>
+            <div id="applyPresetRow" class="setting-row" style="display: none; margin-top: 10px; padding: 10px 14px; background: rgba(var(--primary-rgb), 0.12); border: 1px solid var(--primary-color); border-radius: 6px;">
+              <span class="setting-label" style="color: var(--primary-color); font-weight: bold;">⚠️ Selected preset is ready to apply</span>
+              <button id="btnApplyPreset" class="btn btn-primary">✓ Apply Selected Preset</button>
+            </div>
             <div class="btn-row">
-              <button id="btnSavePreset" class="btn btn-primary">Save Current Config</button>
-              <button id="btnResetPresets" class="btn">Reset to Default JSON</button>
+              <button id="btnSavePreset" class="btn">Save Current Preset</button>
+              <button id="btnSaveAsPreset" class="btn btn-primary">➕ Save As New Preset...</button>
+              <button id="btnResetPresets" class="btn">Reset to Defaults</button>
             </div>
           </div>
 

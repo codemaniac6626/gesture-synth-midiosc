@@ -29,6 +29,7 @@ import {
 import { stabilizeChordState } from "./src/stabilizer.js";
 import { drawEnergy, drawFrame } from "./src/visualizer.js";
 import { updateVolumeMeter, initModalListeners } from "./src/uiController.js";
+import { initKeyboardUI } from "./src/keyboardUI.js";
 
 // Initialize Vercel Analytics
 inject();
@@ -100,8 +101,9 @@ midi.onActivity(() => {
   setTimeout(() => midiLed.classList.remove("flash"), 80);
 });
 
-// Initialize UI Modal listeners & start overlay handler
+// Initialize UI Modal listeners, start overlay handler, and collapsible piano keyboard UI
 initModalListeners(midi, synth, startOverlayEl, canvasEl);
+initKeyboardUI(midi, getCurrentConfig());
 
 /**
  * Requests webcam media stream access and binds it to the video DOM element.
@@ -241,8 +243,30 @@ async function main() {
         const ccNum = currentConfig.rightHand.tilt.ccNumber || 1;
         const minVal = currentConfig.rightHand.tilt.minVal ?? 0;
         const maxVal = currentConfig.rightHand.tilt.maxVal ?? 127;
-        const normTilt = (horizontalTilt + 1) / 2;
-        const ccVal = Math.round(minVal + normTilt * (maxVal - minVal));
+        const tiltMode = currentConfig.rightHand.tilt.mode || "normal";
+        const isInverted = currentConfig.rightHand.tilt.invert ?? false;
+
+        const effectiveTilt = isInverted ? -horizontalTilt : horizontalTilt;
+        let ccVal = 0;
+
+        if (tiltMode === "bipolar") {
+          // Bipolar Mode: Center (0 tilt) = minVal
+          // Tilting Right (> 0): increases above minVal up to maxVal
+          // Tilting Left (< 0): decreases below minVal down to 0
+          if (effectiveTilt > 0) {
+            const mag = effectiveTilt;
+            ccVal = Math.round(minVal + mag * (maxVal - minVal));
+          } else {
+            const mag = Math.abs(effectiveTilt);
+            ccVal = Math.round(minVal - mag * minVal);
+          }
+        } else {
+          // Normal Mode: Center (0 tilt) = 50% (midpoint between minVal and maxVal)
+          const normTilt = (effectiveTilt + 1) / 2;
+          ccVal = Math.round(minVal + normTilt * (maxVal - minVal));
+        }
+
+        ccVal = Math.max(0, Math.min(127, ccVal));
         midi.sendCC(ccNum, ccVal);
       }
 
