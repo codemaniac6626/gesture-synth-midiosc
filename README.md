@@ -1,3 +1,10 @@
+# Gesture MIDI Controller
+
+A MIDI Controller extension built on top of @indecisve.eric's Gesture Synth.
+
+Link to the creators page: https://www.indecisiveeric.com/
+
+
 # Gesture Synth
 
 A camera-based musical instrument that lets you control chords, tone, and expression using hand gestures.

@@ -345,14 +345,16 @@ function bindSettingsEventsOnce(midi, synth) {
     }
   });
 
-  // Tab switching logic
-  document.querySelectorAll(".tab-btn").forEach(btn => {
-    btn.addEventListener("click", () => {
-      document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
-      document.querySelectorAll(".tab-pane").forEach(p => p.classList.remove("active"));
-      btn.classList.add("active");
-      const paneId = `tab-${btn.dataset.tab}`;
-      document.getElementById(paneId)?.classList.add("active");
+  // Tab switching logic (scoped per modal card container)
+  document.querySelectorAll(".modal-card").forEach(modal => {
+    modal.querySelectorAll(".tab-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        modal.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+        modal.querySelectorAll(".tab-pane").forEach(p => p.classList.remove("active"));
+        btn.classList.add("active");
+        const paneId = `tab-${btn.dataset.tab}`;
+        modal.querySelector(`#${paneId}`)?.classList.add("active");
+      });
     });
   });
 
@@ -469,6 +471,9 @@ function bindSettingsEventsOnce(midi, synth) {
  * @param {HTMLCanvasElement} canvasEl Overlay canvas element.
  */
 export function initModalListeners(midi, synth, startOverlayEl, canvasEl) {
+  // Bind settings & help modal event listeners immediately on app initialization
+  bindSettingsEventsOnce(midi, synth);
+
   const settingsButton = document.getElementById("settingsButton");
   const settingsModal = document.getElementById("settingsModal");
   const closeSettings = document.getElementById("closeSettings");

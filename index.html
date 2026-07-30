@@ -1,348 +1,455 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>Gesture Synth - Web MIDI & Gesture Control</title>
-<link rel="stylesheet" href="/style.css" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Gesture Synth - Web MIDI & Gesture Control</title>
+  <link rel="stylesheet" href="/style.css" />
 </head>
+
 <body>
-<div id="stage">
-  <video id="webcam" autoplay playsinline muted></video>
-  <canvas id="overlay" class="dimmed"></canvas>
+  <div id="stage">
+    <video id="webcam" autoplay playsinline muted></video>
+    <canvas id="overlay" class="dimmed"></canvas>
 
-  <div id="chordDisplay">--</div>
-  
-  <div id="volumeMeter">
-    <div class="vol-bar" data-index="7"></div>
-    <div class="vol-bar" data-index="6"></div>
-    <div class="vol-bar" data-index="5"></div>
-    <div class="vol-bar" data-index="4"></div>
-    <div class="vol-bar" data-index="3"></div>
-    <div class="vol-bar" data-index="2"></div>
-    <div class="vol-bar" data-index="1"></div>
-    <div class="vol-bar" data-index="0"></div>
-  </div>
+    <div id="chordDisplay">--</div>
 
-  <select id="keySelect">
-    <option value="220.00" data-note="A" selected>Key: A</option>
-    <option value="233.08" data-note="Bb">Key: A#/Bb</option>
-    <option value="246.94" data-note="B">Key: B</option>
-    <option value="261.63" data-note="C">Key: C</option>
-    <option value="277.18" data-note="Db">Key: C#/Db</option>
-    <option value="293.66" data-note="D">Key: D</option>
-    <option value="311.13" data-note="Eb">Key: D#/Eb</option>
-    <option value="329.63" data-note="E">Key: E</option>
-    <option value="349.23" data-note="F">Key: F</option>
-    <option value="369.99" data-note="Gb">Key: F#/Gb</option>
-    <option value="392.00" data-note="G">Key: G</option>
-    <option value="415.30" data-note="Ab">Key: G#/Ab</option>
-  </select>
-
-  <select id="toneSelect">
-    <option value="triangle" selected>Warm Synth</option>
-    <option value="sawtooth">Bright Synth</option>
-    <option value="square">Retro Synth</option>
-  </select>
-
-  <!-- MIDI Status Badge -->
-  <div id="midiStatusBadge" title="Web MIDI Status">
-    <span class="led-indicator" id="midiLed"></span>
-    <span id="midiStatusText">MIDI Initializing...</span>
-  </div>
-
-  <div id="qualityDisplay">--</div>
-  <div id="distortionDisplay">Filter: 0%</div>
-
-  <!-- Bottom Left Controls -->
-  <div class="floating-controls">
-    <button id="settingsButton" class="icon-btn" title="MIDI & Gesture Settings">⚙</button>
-    <button id="helpButton" class="icon-btn" title="Gesture Guide">?</button>
-  </div>
-
-  <!-- Collapsible Keyboard UI Strip Footer -->
-  <div id="keyboardFooter" class="keyboard-footer">
-    <div id="keyboardHeader" class="keyboard-footer-header" title="Toggle MIDI Keyboard View">
-      <button id="keyboardToggleBtn" class="keyboard-toggle-btn">
-        <span>🎹 MIDI Keyboard</span>
-        <span id="keyboardToggleIcon">▼</span>
-      </button>
-      <span id="keyboardStatusText" class="keyboard-status-text">C3 - C6 (Active Output)</span>
+    <div id="volumeMeter">
+      <div class="vol-bar" data-index="7"></div>
+      <div class="vol-bar" data-index="6"></div>
+      <div class="vol-bar" data-index="5"></div>
+      <div class="vol-bar" data-index="4"></div>
+      <div class="vol-bar" data-index="3"></div>
+      <div class="vol-bar" data-index="2"></div>
+      <div class="vol-bar" data-index="1"></div>
+      <div class="vol-bar" data-index="0"></div>
     </div>
-    <div id="keyboardContainer" class="keyboard-container">
-      <div id="keyboardDisabledOverlay" class="keyboard-disabled-overlay" style="display: none;">
-        🚫 MIDI Output Disabled in App Settings
+
+    <select id="keySelect">
+      <option value="220.00" data-note="A" selected>Key: A</option>
+      <option value="233.08" data-note="Bb">Key: A#/Bb</option>
+      <option value="246.94" data-note="B">Key: B</option>
+      <option value="261.63" data-note="C">Key: C</option>
+      <option value="277.18" data-note="Db">Key: C#/Db</option>
+      <option value="293.66" data-note="D">Key: D</option>
+      <option value="311.13" data-note="Eb">Key: D#/Eb</option>
+      <option value="329.63" data-note="E">Key: E</option>
+      <option value="349.23" data-note="F">Key: F</option>
+      <option value="369.99" data-note="Gb">Key: F#/Gb</option>
+      <option value="392.00" data-note="G">Key: G</option>
+      <option value="415.30" data-note="Ab">Key: G#/Ab</option>
+    </select>
+
+    <select id="toneSelect">
+      <option value="triangle" selected>Warm Synth</option>
+      <option value="sawtooth">Bright Synth</option>
+      <option value="square">Retro Synth</option>
+    </select>
+
+    <!-- MIDI Status Badge -->
+    <div id="midiStatusBadge" title="Web MIDI Status">
+      <span class="led-indicator" id="midiLed"></span>
+      <span id="midiStatusText">MIDI Initializing...</span>
+    </div>
+
+    <div id="qualityDisplay">--</div>
+    <div id="distortionDisplay">Filter: 0%</div>
+
+    <!-- Bottom Left Controls -->
+    <div class="floating-controls">
+      <button id="settingsButton" class="icon-btn" title="MIDI & Gesture Settings">⚙</button>
+      <button id="helpButton" class="icon-btn" title="Gesture Guide">?</button>
+    </div>
+
+    <!-- Collapsible Keyboard UI Strip Footer -->
+    <div id="keyboardFooter" class="keyboard-footer">
+      <div id="keyboardHeader" class="keyboard-footer-header" title="Toggle MIDI Keyboard View">
+        <button id="keyboardToggleBtn" class="keyboard-toggle-btn">
+          <span>🎹 MIDI Keyboard</span>
+          <span id="keyboardToggleIcon">▼</span>
+        </button>
+        <span id="keyboardStatusText" class="keyboard-status-text">C3 - C6 (Active Output)</span>
       </div>
-      <div id="keyboardKeysWrapper" class="keyboard-keys-wrapper">
-        <!-- Dynamically generated C3 to C6 keys -->
+      <div id="keyboardContainer" class="keyboard-container">
+        <div id="keyboardDisabledOverlay" class="keyboard-disabled-overlay" style="display: none;">
+          🚫 MIDI Output Disabled in App Settings
+        </div>
+        <div id="keyboardKeysWrapper" class="keyboard-keys-wrapper">
+          <!-- Dynamically generated C3 to C6 keys -->
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- Help Guide Modal -->
-  <div id="helpModal" class="modal-overlay hidden">
-    <div class="help-content">
-      <button id="closeHelp" class="close-modal-btn" style="float: right;">✕</button>
-
-      <h2>Gesture Synth Guide</h2>
-
-      <h3>Left Hand</h3>
-      <p><b>Tilt</b><br>
-      Inward → Major Mode<br>
-      Outward → Minor Mode (or map to CC in Settings)</p>
-
-      <p><b>Fingers (Notes / Scale Degree)</b><br>
-      1 → Degree I (Tonic)<br>
-      2 → Degree II<br>
-      3 → Degree III<br>
-      4 → Degree IV<br>
-      5 → Degree V<br>
-      Index + Pinky → Degree VI<br>
-      Index + Pinky + Thumb → Degree VII</p>
-
-      <h3>Right Hand</h3>
-      <p><b>Fingers (Voicing / CC Trigger)</b><br>
-      1 → Root Position / CC<br>
-      2 → 1st Inversion / CC<br>
-      3 → Major/Minor 7th / CC<br>
-      4 → Dominant/Diminished 7th / CC</p>
-
-      <p><b>Octave / Thumb</b><br>
-      Thumb In → Higher Octave<br>
-      Thumb Out → Lower Octave / CC</p>
-
-      <p><b>Tilt</b><br>
-      Continuous CC (default: CC 1 Mod Wheel / DAW Knob Filter)</p>
-
-      <p><b>Height</b><br>
-      Continuous CC (default: CC 7 Volume / Synth Gain)</p>
-
-      <a href="https://www.instagram.com/p/DbH1BACxNCG/" target="_blank" rel="noopener noreferrer">
-        📹 Watch Video Tutorial on Instagram
-      </a>
-    </div>
-  </div>
-
-  <!-- Settings & MIDI Config Modal -->
-  <div id="settingsModal" class="modal-overlay hidden">
-    <div class="modal-card">
-      <div class="modal-header">
-        <h2>⚙ Gesture & MIDI Settings</h2>
-        <button id="closeSettings" class="close-modal-btn">✕</button>
-      </div>
-
-      <div class="modal-tabs">
-        <button class="tab-btn active" data-tab="audio-midi">Audio & MIDI</button>
-        <button class="tab-btn" data-tab="left-hand">Left Hand</button>
-        <button class="tab-btn" data-tab="right-hand">Right Hand</button>
-        <button class="tab-btn" data-tab="presets">Presets & JSON</button>
-      </div>
-
-      <div class="modal-body">
-        <!-- TAB 1: AUDIO & MIDI SETUP -->
-        <div id="tab-audio-midi" class="tab-pane active">
-          <div class="setting-group">
-            <h3>🌐 Web MIDI API Output</h3>
-            
-            <div class="setting-row">
-              <span class="setting-label">Enable Web MIDI Output</span>
-              <label class="switch">
-                <input type="checkbox" id="cfgMidiEnabled" checked>
-                <span class="slider"></span>
-              </label>
-            </div>
-
-            <div class="setting-row">
-              <span class="setting-label">Target MIDI Output Device</span>
-              <select id="cfgMidiOutputSelect" class="setting-select">
-                <option value="all">All Available Outputs</option>
-              </select>
-            </div>
-
-            <div class="setting-row">
-              <span class="setting-label">MIDI Channel</span>
-              <select id="cfgMidiChannelSelect" class="setting-select">
-                <!-- Channels 1..16 injected dynamically -->
-              </select>
-            </div>
-          </div>
-
-          <div class="setting-group">
-            <h3>🔊 Browser Audio Synth</h3>
-            
-            <div class="setting-row">
-              <span class="setting-label">Enable Sound in Browser</span>
-              <label class="switch">
-                <input type="checkbox" id="cfgAudioEnabled" checked>
-                <span class="slider"></span>
-              </label>
-            </div>
-
-            <div class="setting-row">
-              <span class="setting-label">Master Browser Synth Gain</span>
-              <input type="range" id="cfgMasterVolume" min="0" max="1" step="0.05" value="0.8" style="accent-color: var(--primary-color);">
-            </div>
-          </div>
+    <!-- Help Guide Modal -->
+    <div id="helpModal" class="modal-overlay hidden">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h2>📖 Gesture Synth Manual & Guide</h2>
+          <button id="closeHelp" class="close-modal-btn">✕</button>
         </div>
 
-        <!-- TAB 2: LEFT HAND MAPPINGS -->
-        <div id="tab-left-hand" class="tab-pane">
-          <div class="setting-group">
-            <h3>✋ Left Hand Mode Options</h3>
-            <div class="setting-row">
-              <span class="setting-label">Send Chords (Harmonized Tones over MIDI & Synth)</span>
-              <label class="switch">
-                <input type="checkbox" id="cfgLeftSendChords" checked>
-                <span class="slider"></span>
-              </label>
-            </div>
-            <div class="setting-row">
-              <span class="setting-label">Left Hand Transpose (Semitones: -36 to +36)</span>
-              <input type="number" id="cfgLeftTranspose" class="setting-input" min="-36" max="36" value="0" style="width: 70px;">
-            </div>
-          </div>
-
-          <div class="setting-group">
-            <h3>🖐 Left Hand Finger Gestures (Scale Degrees / MIDI Notes)</h3>
-            <div class="mapping-grid" id="leftGestureContainer">
-              <!-- Rendered dynamically -->
-            </div>
-          </div>
-
-          <div class="setting-group">
-            <h3>🔄 Left Hand Tilt Control</h3>
-            <div class="setting-row">
-              <span class="setting-label">Enable Left Hand Tilt Continuous CC</span>
-              <label class="switch">
-                <input type="checkbox" id="cfgLeftTiltEnabled">
-                <span class="slider"></span>
-              </label>
-            </div>
-            <div class="setting-row">
-              <span class="setting-label">Left Tilt CC Number</span>
-              <input type="number" id="cfgLeftTiltCC" class="setting-input" min="0" max="127" value="14" style="width: 70px;">
-            </div>
-          </div>
+        <div class="modal-tabs">
+          <button class="tab-btn active" data-tab="webaudio-manual">🔊 Web Audio Manual</button>
+          <button class="tab-btn" data-tab="midi-manual">🎹 MIDI Setup & DAW Manual</button>
         </div>
 
-        <!-- TAB 3: RIGHT HAND MAPPINGS -->
-        <div id="tab-right-hand" class="tab-pane">
-          <div class="setting-group">
-            <h3>🎛 Right Hand Tilt -> DAW Knob Control (CC)</h3>
-            <div class="setting-row">
-              <span class="setting-label">Enable Tilt CC (Route to DAW Knob)</span>
-              <label class="switch">
-                <input type="checkbox" id="cfgRightTiltEnabled" checked>
-                <span class="slider"></span>
-              </label>
+        <div class="modal-body">
+          <!-- TAB 1: WEB AUDIO MANUAL (Original Untouched Manual) -->
+          <div id="tab-webaudio-manual" class="tab-pane active">
+            <div class="setting-group" style="font-family: monospace;">
+              <h3 style="color: var(--primary-color);">✋ Left Hand Gesture Map</h3>
+              <p><b>Tilt</b><br>
+                Inward → Major Mode<br>
+                Outward → Minor Mode (or map to CC in Settings)</p>
+
+              <p><b>Fingers (Notes / Scale Degree)</b><br>
+                1 → Degree I (Tonic)<br>
+                2 → Degree II<br>
+                3 → Degree III<br>
+                4 → Degree IV<br>
+                5 → Degree V<br>
+                Index + Pinky → Degree VI<br>
+                Index + Pinky + Thumb → Degree VII</p>
             </div>
-            <div class="setting-row">
-              <span class="setting-label">Tilt Control Mode</span>
-              <select id="cfgRightTiltMode" class="setting-select">
-                <option value="normal">Normal (Center = 50%)</option>
-                <option value="bipolar">Bipolar (Center = Min Value)</option>
-              </select>
+
+            <div class="setting-group" style="font-family: monospace;">
+              <h3 style="color: var(--primary-color);">🤚 Right Hand Gesture Map</h3>
+              <p><b>Fingers (Voicing / CC Trigger)</b><br>
+                1 → Root Position / CC<br>
+                2 → 1st Inversion / CC<br>
+                3 → Major/Minor 7th / CC<br>
+                4 → Dominant/Diminished 7th / CC</p>
+
+              <p><b>Octave / Thumb</b><br>
+                Thumb In → Higher Octave<br>
+                Thumb Out → Lower Octave / CC</p>
+
+              <p><b>Tilt</b><br>
+                Continuous CC (default: CC 1 Mod Wheel / DAW Knob Filter)</p>
+
+              <p><b>Height</b><br>
+                Continuous CC (default: CC 7 Volume / Synth Gain)</p>
             </div>
-            <div class="setting-row">
-              <span class="setting-label">Invert Tilt Direction</span>
-              <label class="switch">
-                <input type="checkbox" id="cfgRightTiltInvert">
-                <span class="slider"></span>
-              </label>
-            </div>
-            <div class="setting-row">
-              <span class="setting-label">Right Hand Tilt CC Number (default: CC 1 ModWheel)</span>
-              <input type="number" id="cfgRightTiltCC" class="setting-input" min="0" max="127" value="1" style="width: 70px;">
-            </div>
-            <div class="setting-row">
-              <span class="setting-label">Min Value (0 - 127)</span>
-              <input type="number" id="cfgRightTiltMinVal" class="setting-input" min="0" max="127" value="0" style="width: 70px;">
-            </div>
-            <div class="setting-row">
-              <span class="setting-label">Max Value (0 - 127)</span>
-              <input type="number" id="cfgRightTiltMaxVal" class="setting-input" min="0" max="127" value="127" style="width: 70px;">
+
+            <div style="margin-top: 14px;">
+              <a href="https://www.instagram.com/p/DbH1BACxNCG/" target="_blank" rel="noopener noreferrer"
+                style="color: var(--primary-color); font-family: monospace; font-weight: bold; text-decoration: none;">
+                📹 Watch Video Tutorial on Instagram →
+              </a>
             </div>
           </div>
 
-          <div class="setting-group">
-            <h3>📶 Right Hand Height -> Master Volume / Expression (CC)</h3>
-            <div class="setting-row">
-              <span class="setting-label">Enable Height CC</span>
-              <label class="switch">
-                <input type="checkbox" id="cfgRightHeightEnabled" checked>
-                <span class="slider"></span>
-              </label>
+          <!-- TAB 2: MIDI SETUP & DAW MANUAL -->
+          <div id="tab-midi-manual" class="tab-pane">
+            <div class="setting-group" style="font-family: monospace;">
+              <h3 style="color: var(--primary-color);">🎛 Web MIDI & DAW Integration Overview</h3>
+              <p style="font-size: 13px; color: var(--text-main); line-height: 1.5;">
+                Gesture Synth transforms your webcam hand movements into <strong>real-time Web MIDI messages</strong>
+                (polyphonic MIDI Note-On/Off & Continuous Controller CCs) to trigger any software synthesizer or DAW
+                plugin (Ableton Live, FL Studio, Logic Pro, Reaper, Cubase, Bitwig).
+              </p>
             </div>
-            <div class="setting-row">
-              <span class="setting-label">Right Hand Height CC Number (default: CC 7 Volume)</span>
-              <input type="number" id="cfgRightHeightCC" class="setting-input" min="0" max="127" value="7" style="width: 70px;">
-            </div>
-            <div class="setting-row">
-              <span class="setting-label">Min Value (0 - 127)</span>
-              <input type="number" id="cfgRightHeightMinVal" class="setting-input" min="0" max="127" value="0" style="width: 70px;">
-            </div>
-            <div class="setting-row">
-              <span class="setting-label">Max Value (0 - 127)</span>
-              <input type="number" id="cfgRightHeightMaxVal" class="setting-input" min="0" max="127" value="127" style="width: 70px;">
-            </div>
-          </div>
 
-          <div class="setting-group">
-            <h3>✋ Right Hand Finger Triggers</h3>
-            <div class="mapping-grid" id="rightGestureContainer">
-              <!-- Rendered dynamically -->
+            <div class="setting-group" style="font-family: monospace;">
+              <h3 style="color: var(--primary-color);">🪟 Windows Setup Guide (Virtual MIDI via loopMIDI)</h3>
+              <ol
+                style="font-size: 13px; color: var(--text-main); line-height: 1.6; padding-left: 20px; margin-bottom: 0;">
+                <li><strong>Download loopMIDI</strong>: Download & install the free utility <a
+                    href="https://www.tobias-erichsen.de/software/loopmidi.html" target="_blank"
+                    rel="noopener noreferrer" style="color: var(--primary-color);">loopMIDI by Tobias Erichsen</a>.</li>
+                <li><strong>Create Virtual Port</strong>: Open <code>loopMIDI</code>, click the <code>+</code> button at
+                  the bottom left to create a virtual port (e.g. <code>loopMIDI Port</code>).</li>
+                <li><strong>Enable Output in App</strong>: Open Gesture Synth in Chrome/Edge, click
+                  <code>⚙ Settings</code> → <code>Audio & MIDI</code>, check <code>Enable Web MIDI Output</code>, and
+                  select <code>loopMIDI Port</code> as the target output.
+                </li>
+                <li><strong>Configure DAW Input</strong>: Open your DAW (Ableton, FL Studio, Reaper), go to
+                  <em>Preferences → MIDI</em>, and enable <code>loopMIDI Port</code> as an active MIDI Input device.
+                </li>
+                <li><strong>Arm Instrument Track</strong>: Create a Synth / VST track in your DAW, set its MIDI input to
+                  <code>loopMIDI Port (Channel 1)</code>, and arm the track for recording!
+                </li>
+              </ol>
             </div>
-          </div>
-        </div>
 
-        <!-- TAB 4: PRESETS & DATA -->
-        <div id="tab-presets" class="tab-pane">
-          <div class="setting-group">
-            <h3>💾 Preset Selection & Storage</h3>
-            <div class="setting-row">
-              <span class="setting-label">Active Preset</span>
-              <select id="cfgPresetSelect" class="setting-select">
-                <!-- Presets loaded dynamically -->
-              </select>
-            </div>
-            <div id="applyPresetRow" class="setting-row" style="display: none; margin-top: 10px; padding: 10px 14px; background: rgba(var(--primary-rgb), 0.12); border: 1px solid var(--primary-color); border-radius: 6px;">
-              <span class="setting-label" style="color: var(--primary-color); font-weight: bold;">⚠️ Selected preset is ready to apply</span>
-              <button id="btnApplyPreset" class="btn btn-primary">✓ Apply Selected Preset</button>
-            </div>
-            <div class="btn-row">
-              <button id="btnSavePreset" class="btn">Save Current Preset</button>
-              <button id="btnSaveAsPreset" class="btn btn-primary">➕ Save As New Preset...</button>
-              <button id="btnResetPresets" class="btn">Reset to Defaults</button>
-            </div>
-          </div>
+            <!-- <div class="setting-group" style="font-family: monospace;">
+            <h3 style="color: var(--primary-color);">🍏 macOS Setup Guide (IAC Driver)</h3>
+            <ol style="font-size: 13px; color: var(--text-main); line-height: 1.6; padding-left: 20px; margin-bottom: 0;">
+              <li>Open <strong>Audio MIDI Setup</strong> on macOS (Press <code>Cmd + Space</code> and type Audio MIDI Setup).</li>
+              <li>Select <em>Window → Show MIDI Studio</em>. Double-click <strong>IAC Driver</strong>, check <code>Device is online</code>, and add a port (e.g. <code>Bus 1</code>).</li>
+              <li>In Gesture Synth settings, select <code>IAC Driver Bus 1</code> as your MIDI Output.</li>
+              <li>In Logic Pro / GarageBand / Ableton, arm your track with input set to <code>IAC Driver Bus 1</code>.</li>
+            </ol>
+          </div> -->
 
-          <div class="setting-group">
-            <h3>📁 Import / Export Configuration (`presets.json`)</h3>
-            <p style="font-size: 12px; color: #888; margin-top: 0;">Export your gesture and MIDI mapping definitions as a JSON file or import a custom JSON preset map.</p>
-            <div class="btn-row">
-              <button id="btnExportJSON" class="btn">⬇ Download presets.json</button>
-              <label class="btn" style="cursor: pointer;">
-                ⬆ Upload JSON
-                <input type="file" id="btnImportJSON" accept=".json" style="display: none;">
-              </label>
+            <div class="setting-group" style="font-family: monospace;">
+              <h3 style="color: var(--primary-color);">🎚 MIDI CC Mapping & DAW "MIDI Learn"</h3>
+              <ul
+                style="font-size: 13px; color: var(--text-main); line-height: 1.6; padding-left: 20px; margin-bottom: 0;">
+                <li><strong>Right Hand Tilt (CC 1 ModWheel)</strong>: Right-click any plugin knob (Filter Cutoff,
+                  Resonance, Effects) in your DAW, click <em>MIDI Learn</em>, and tilt your hand to map it instantly.
+                </li>
+                <li><strong>Right Hand Height (CC 7 Volume)</strong>: Controls expression / master gain vertically.</li>
+                <li><strong>Tilt Modes</strong>: Choose between <em>Normal (Center = 50%)</em> or <em>Bipolar (Center =
+                    Min, Right = +, Left = -)</em> in Right Hand settings.</li>
+
+                <li><strong>Left Hand Chord Mode</strong>: Sends the same chord that plays in Web Audio Mode as MIDI.
+                </li>
+
+                <li><strong>Left Hand Single Mode</strong>: Sends single note in the selected key
+                </li>
+              </ul>
+            </div>
+
+            <div class="setting-group" style="font-family: monospace;">
+              <h3 style="color: var(--primary-color);">⚡ Troubleshooting Tips</h3>
+              <ul
+                style="font-size: 13px; color: var(--text-main); line-height: 1.6; padding-left: 20px; margin-bottom: 0;">
+                <li><strong>No signal in DAW?</strong> Ensure <code>loopMIDI</code> or <code>IAC Driver</code> is
+                  created and running <em>before</em> launching your DAW.</li>
+                <li><strong>Browser popup block?</strong> Make sure to click the startup screen to initialize Web Audio
+                  and grant Web MIDI permissions when prompted.</li>
+              </ul>
             </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- Audio Initialization Overlay -->
-  <div id="startOverlay">
-    <div class="start-credits">
-      <span>Inception of the idea: <strong>@indecisive.eric</strong></span>
-      <span class="credit-divider">•</span>
-      <span>MIDI Features: <strong>@breathe_on_beat</strong></span>
+    <!-- Settings & MIDI Config Modal -->
+    <div id="settingsModal" class="modal-overlay hidden">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h2>⚙ Gesture & MIDI Settings</h2>
+          <button id="closeSettings" class="close-modal-btn">✕</button>
+        </div>
+
+        <div class="modal-tabs">
+          <button class="tab-btn active" data-tab="audio-midi">Audio & MIDI</button>
+          <button class="tab-btn" data-tab="left-hand">Left Hand</button>
+          <button class="tab-btn" data-tab="right-hand">Right Hand</button>
+          <button class="tab-btn" data-tab="presets">Presets & JSON</button>
+        </div>
+
+        <div class="modal-body">
+          <!-- TAB 1: AUDIO & MIDI SETUP -->
+          <div id="tab-audio-midi" class="tab-pane active">
+            <div class="setting-group">
+              <h3>🌐 Web MIDI API Output</h3>
+
+              <div class="setting-row">
+                <span class="setting-label">Enable Web MIDI Output</span>
+                <label class="switch">
+                  <input type="checkbox" id="cfgMidiEnabled" checked>
+                  <span class="slider"></span>
+                </label>
+              </div>
+
+              <div class="setting-row">
+                <span class="setting-label">Target MIDI Output Device</span>
+                <select id="cfgMidiOutputSelect" class="setting-select">
+                  <option value="all">All Available Outputs</option>
+                </select>
+              </div>
+
+              <div class="setting-row">
+                <span class="setting-label">MIDI Channel</span>
+                <select id="cfgMidiChannelSelect" class="setting-select">
+                  <!-- Channels 1..16 injected dynamically -->
+                </select>
+              </div>
+            </div>
+
+            <div class="setting-group">
+              <h3>🔊 Browser Audio Synth</h3>
+
+              <div class="setting-row">
+                <span class="setting-label">Enable Sound in Browser</span>
+                <label class="switch">
+                  <input type="checkbox" id="cfgAudioEnabled" checked>
+                  <span class="slider"></span>
+                </label>
+              </div>
+
+              <div class="setting-row">
+                <span class="setting-label">Master Browser Synth Gain</span>
+                <input type="range" id="cfgMasterVolume" min="0" max="1" step="0.05" value="0.8"
+                  style="accent-color: var(--primary-color);">
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB 2: LEFT HAND MAPPINGS -->
+          <div id="tab-left-hand" class="tab-pane">
+            <div class="setting-group">
+              <h3>✋ Left Hand Mode Options</h3>
+              <div class="setting-row">
+                <span class="setting-label">Send Chords (Harmonized Tones over MIDI & Synth)</span>
+                <label class="switch">
+                  <input type="checkbox" id="cfgLeftSendChords" checked>
+                  <span class="slider"></span>
+                </label>
+              </div>
+              <div class="setting-row">
+                <span class="setting-label">Left Hand Transpose (Semitones: -36 to +36)</span>
+                <input type="number" id="cfgLeftTranspose" class="setting-input" min="-36" max="36" value="0"
+                  style="width: 70px;">
+              </div>
+            </div>
+
+            <div class="setting-group">
+              <h3>🖐 Left Hand Finger Gestures (Scale Degrees / MIDI Notes)</h3>
+              <div class="mapping-grid" id="leftGestureContainer">
+                <!-- Rendered dynamically -->
+              </div>
+            </div>
+
+            <div class="setting-group">
+              <h3>🔄 Left Hand Tilt Control</h3>
+              <div class="setting-row">
+                <span class="setting-label">Enable Left Hand Tilt Continuous CC</span>
+                <label class="switch">
+                  <input type="checkbox" id="cfgLeftTiltEnabled">
+                  <span class="slider"></span>
+                </label>
+              </div>
+              <div class="setting-row">
+                <span class="setting-label">Left Tilt CC Number</span>
+                <input type="number" id="cfgLeftTiltCC" class="setting-input" min="0" max="127" value="14"
+                  style="width: 70px;">
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB 3: RIGHT HAND MAPPINGS -->
+          <div id="tab-right-hand" class="tab-pane">
+            <div class="setting-group">
+              <h3>🎛 Right Hand Tilt -> DAW Knob Control (CC)</h3>
+              <div class="setting-row">
+                <span class="setting-label">Enable Tilt CC (Route to DAW Knob)</span>
+                <label class="switch">
+                  <input type="checkbox" id="cfgRightTiltEnabled" checked>
+                  <span class="slider"></span>
+                </label>
+              </div>
+              <div class="setting-row">
+                <span class="setting-label">Tilt Control Mode</span>
+                <select id="cfgRightTiltMode" class="setting-select">
+                  <option value="normal">Normal (Center = 50%)</option>
+                  <option value="bipolar">Bipolar (Center = Min Value)</option>
+                </select>
+              </div>
+              <div class="setting-row">
+                <span class="setting-label">Invert Tilt Direction</span>
+                <label class="switch">
+                  <input type="checkbox" id="cfgRightTiltInvert">
+                  <span class="slider"></span>
+                </label>
+              </div>
+              <div class="setting-row">
+                <span class="setting-label">Right Hand Tilt CC Number (default: CC 1 ModWheel)</span>
+                <input type="number" id="cfgRightTiltCC" class="setting-input" min="0" max="127" value="1"
+                  style="width: 70px;">
+              </div>
+              <div class="setting-row">
+                <span class="setting-label">Min Value (0 - 127)</span>
+                <input type="number" id="cfgRightTiltMinVal" class="setting-input" min="0" max="127" value="0"
+                  style="width: 70px;">
+              </div>
+              <div class="setting-row">
+                <span class="setting-label">Max Value (0 - 127)</span>
+                <input type="number" id="cfgRightTiltMaxVal" class="setting-input" min="0" max="127" value="127"
+                  style="width: 70px;">
+              </div>
+            </div>
+
+            <div class="setting-group">
+              <h3>📶 Right Hand Height -> Master Volume / Expression (CC)</h3>
+              <div class="setting-row">
+                <span class="setting-label">Enable Height CC</span>
+                <label class="switch">
+                  <input type="checkbox" id="cfgRightHeightEnabled" checked>
+                  <span class="slider"></span>
+                </label>
+              </div>
+              <div class="setting-row">
+                <span class="setting-label">Right Hand Height CC Number (default: CC 7 Volume)</span>
+                <input type="number" id="cfgRightHeightCC" class="setting-input" min="0" max="127" value="7"
+                  style="width: 70px;">
+              </div>
+              <div class="setting-row">
+                <span class="setting-label">Min Value (0 - 127)</span>
+                <input type="number" id="cfgRightHeightMinVal" class="setting-input" min="0" max="127" value="0"
+                  style="width: 70px;">
+              </div>
+              <div class="setting-row">
+                <span class="setting-label">Max Value (0 - 127)</span>
+                <input type="number" id="cfgRightHeightMaxVal" class="setting-input" min="0" max="127" value="127"
+                  style="width: 70px;">
+              </div>
+            </div>
+
+            <div class="setting-group">
+              <h3>✋ Right Hand Finger Triggers</h3>
+              <div class="mapping-grid" id="rightGestureContainer">
+                <!-- Rendered dynamically -->
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB 4: PRESETS & DATA -->
+          <div id="tab-presets" class="tab-pane">
+            <div class="setting-group">
+              <h3>💾 Preset Selection & Storage</h3>
+              <div class="setting-row">
+                <span class="setting-label">Active Preset</span>
+                <select id="cfgPresetSelect" class="setting-select">
+                  <!-- Presets loaded dynamically -->
+                </select>
+              </div>
+              <div id="applyPresetRow" class="setting-row"
+                style="display: none; margin-top: 10px; padding: 10px 14px; background: rgba(var(--primary-rgb), 0.12); border: 1px solid var(--primary-color); border-radius: 6px;">
+                <span class="setting-label" style="color: var(--primary-color); font-weight: bold;">⚠️ Selected preset
+                  is ready to apply</span>
+                <button id="btnApplyPreset" class="btn btn-primary">✓ Apply Selected Preset</button>
+              </div>
+              <div class="btn-row">
+                <button id="btnSavePreset" class="btn">Save Current Preset</button>
+                <button id="btnSaveAsPreset" class="btn btn-primary">➕ Save As New Preset...</button>
+                <button id="btnResetPresets" class="btn">Reset to Defaults</button>
+              </div>
+            </div>
+
+            <div class="setting-group">
+              <h3>📁 Import / Export Configuration (`presets.json`)</h3>
+              <p style="font-size: 12px; color: #888; margin-top: 0;">Export your gesture and MIDI mapping definitions
+                as a JSON file or import a custom JSON preset map.</p>
+              <div class="btn-row">
+                <button id="btnExportJSON" class="btn">⬇ Download presets.json</button>
+                <label class="btn" style="cursor: pointer;">
+                  ⬆ Upload JSON
+                  <input type="file" id="btnImportJSON" accept=".json" style="display: none;">
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
-    <div class="start-circle">▶</div>
-    <div class="start-text">Click to enable Audio & MIDI</div>
+
+    <!-- Audio Initialization Overlay -->
+    <div id="startOverlay">
+      <div class="start-credits">
+        <span>Inception of the idea: <strong>@indecisive.eric</strong></span>
+        <span class="credit-divider">•</span>
+        <span>MIDI Features: <strong>@breathe_on_beat</strong></span>
+      </div>
+      <div class="start-circle">▶</div>
+      <div class="start-text">Click to enable Audio & MIDI</div>
+    </div>
   </div>
-</div>
-<script type="module" src="/main.js"></script>
+  <script type="module" src="/main.js"></script>
 </body>
+
 </html>
