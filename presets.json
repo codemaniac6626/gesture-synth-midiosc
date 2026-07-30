@@ -12,13 +12,48 @@
         "sendChords": true,
         "transpose": 0,
         "gestures": {
-          "1": { "type": "note", "note": 60, "velocity": 100, "label": "Degree I / C4" },
-          "2": { "type": "note", "note": 62, "velocity": 100, "label": "Degree II / D4" },
-          "3": { "type": "note", "note": 64, "velocity": 100, "label": "Degree III / E4" },
-          "4": { "type": "note", "note": 65, "velocity": 100, "label": "Degree IV / F4" },
-          "5": { "type": "note", "note": 67, "velocity": 100, "label": "Degree V / G4" },
-          "6": { "type": "note", "note": 69, "velocity": 100, "label": "Degree VI / A4" },
-          "7": { "type": "note", "note": 71, "velocity": 100, "label": "Degree VII / B4" }
+          "1": {
+            "type": "note",
+            "note": 60,
+            "velocity": 100,
+            "label": "Degree I / C4"
+          },
+          "2": {
+            "type": "note",
+            "note": 62,
+            "velocity": 100,
+            "label": "Degree II / D4"
+          },
+          "3": {
+            "type": "note",
+            "note": 64,
+            "velocity": 100,
+            "label": "Degree III / E4"
+          },
+          "4": {
+            "type": "note",
+            "note": 65,
+            "velocity": 100,
+            "label": "Degree IV / F4"
+          },
+          "5": {
+            "type": "note",
+            "note": 67,
+            "velocity": 100,
+            "label": "Degree V / G4"
+          },
+          "6": {
+            "type": "note",
+            "note": 69,
+            "velocity": 100,
+            "label": "Degree VI / A4"
+          },
+          "7": {
+            "type": "note",
+            "note": 71,
+            "velocity": 100,
+            "label": "Degree VII / B4"
+          }
         },
         "tilt": {
           "enabled": true,
@@ -31,10 +66,30 @@
       },
       "rightHand": {
         "gestures": {
-          "1": { "type": "cc", "ccNumber": 20, "ccValue": 127, "label": "Voicing 1 / CC 20" },
-          "2": { "type": "cc", "ccNumber": 21, "ccValue": 127, "label": "Voicing 2 / CC 21" },
-          "3": { "type": "cc", "ccNumber": 22, "ccValue": 127, "label": "Voicing 3 / CC 22" },
-          "4": { "type": "cc", "ccNumber": 23, "ccValue": 127, "label": "Voicing 4 / CC 23" }
+          "1": {
+            "type": "cc",
+            "ccNumber": 20,
+            "ccValue": 127,
+            "label": "Voicing 1 / CC 20"
+          },
+          "2": {
+            "type": "cc",
+            "ccNumber": 21,
+            "ccValue": 127,
+            "label": "Voicing 2 / CC 21"
+          },
+          "3": {
+            "type": "cc",
+            "ccNumber": 22,
+            "ccValue": 127,
+            "label": "Voicing 3 / CC 22"
+          },
+          "4": {
+            "type": "cc",
+            "ccNumber": 23,
+            "ccValue": 127,
+            "label": "Voicing 4 / CC 23"
+          }
         },
         "tilt": {
           "enabled": true,
@@ -72,13 +127,48 @@
         "sendChords": false,
         "transpose": 0,
         "gestures": {
-          "1": { "type": "note", "note": 48, "velocity": 110, "label": "C3 (Bass 1)" },
-          "2": { "type": "note", "note": 50, "velocity": 110, "label": "D3 (Bass 2)" },
-          "3": { "type": "note", "note": 52, "velocity": 110, "label": "E3 (Bass 3)" },
-          "4": { "type": "note", "note": 53, "velocity": 110, "label": "F3 (Bass 4)" },
-          "5": { "type": "note", "note": 55, "velocity": 110, "label": "G3 (Bass 5)" },
-          "6": { "type": "note", "note": 57, "velocity": 110, "label": "A3 (Bass 6)" },
-          "7": { "type": "note", "note": 59, "velocity": 110, "label": "B3 (Bass 7)" }
+          "1": {
+            "type": "note",
+            "note": 48,
+            "velocity": 110,
+            "label": "C3 (Bass 1)"
+          },
+          "2": {
+            "type": "note",
+            "note": 50,
+            "velocity": 110,
+            "label": "D3 (Bass 2)"
+          },
+          "3": {
+            "type": "note",
+            "note": 52,
+            "velocity": 110,
+            "label": "E3 (Bass 3)"
+          },
+          "4": {
+            "type": "note",
+            "note": 53,
+            "velocity": 110,
+            "label": "F3 (Bass 4)"
+          },
+          "5": {
+            "type": "note",
+            "note": 55,
+            "velocity": 110,
+            "label": "G3 (Bass 5)"
+          },
+          "6": {
+            "type": "note",
+            "note": 57,
+            "velocity": 110,
+            "label": "A3 (Bass 6)"
+          },
+          "7": {
+            "type": "note",
+            "note": 59,
+            "velocity": 110,
+            "label": "B3 (Bass 7)"
+          }
         },
         "tilt": {
           "enabled": true,
@@ -91,10 +181,30 @@
       },
       "rightHand": {
         "gestures": {
-          "1": { "type": "cc", "ccNumber": 16, "ccValue": 127, "label": "Trigger 1 (CC 16)" },
-          "2": { "type": "cc", "ccNumber": 17, "ccValue": 127, "label": "Trigger 2 (CC 17)" },
-          "3": { "type": "cc", "ccNumber": 18, "ccValue": 127, "label": "Trigger 3 (CC 18)" },
-          "4": { "type": "cc", "ccNumber": 19, "ccValue": 127, "label": "Trigger 4 (CC 19)" }
+          "1": {
+            "type": "cc",
+            "ccNumber": 16,
+            "ccValue": 127,
+            "label": "Trigger 1 (CC 16)"
+          },
+          "2": {
+            "type": "cc",
+            "ccNumber": 17,
+            "ccValue": 127,
+            "label": "Trigger 2 (CC 17)"
+          },
+          "3": {
+            "type": "cc",
+            "ccNumber": 18,
+            "ccValue": 127,
+            "label": "Trigger 3 (CC 18)"
+          },
+          "4": {
+            "type": "cc",
+            "ccNumber": 19,
+            "ccValue": 127,
+            "label": "Trigger 4 (CC 19)"
+          }
         },
         "tilt": {
           "enabled": true,
@@ -132,13 +242,48 @@
         "sendChords": true,
         "transpose": 0,
         "gestures": {
-          "1": { "type": "note", "note": 60, "velocity": 100, "label": "Degree I / C4" },
-          "2": { "type": "note", "note": 62, "velocity": 100, "label": "Degree II / D4" },
-          "3": { "type": "note", "note": 64, "velocity": 100, "label": "Degree III / E4" },
-          "4": { "type": "note", "note": 65, "velocity": 100, "label": "Degree IV / F4" },
-          "5": { "type": "note", "note": 67, "velocity": 100, "label": "Degree V / G4" },
-          "6": { "type": "note", "note": 69, "velocity": 100, "label": "Degree VI / A4" },
-          "7": { "type": "note", "note": 71, "velocity": 100, "label": "Degree VII / B4" }
+          "1": {
+            "type": "note",
+            "note": 60,
+            "velocity": 100,
+            "label": "Degree I / C4"
+          },
+          "2": {
+            "type": "note",
+            "note": 62,
+            "velocity": 100,
+            "label": "Degree II / D4"
+          },
+          "3": {
+            "type": "note",
+            "note": 64,
+            "velocity": 100,
+            "label": "Degree III / E4"
+          },
+          "4": {
+            "type": "note",
+            "note": 65,
+            "velocity": 100,
+            "label": "Degree IV / F4"
+          },
+          "5": {
+            "type": "note",
+            "note": 67,
+            "velocity": 100,
+            "label": "Degree V / G4"
+          },
+          "6": {
+            "type": "note",
+            "note": 69,
+            "velocity": 100,
+            "label": "Degree VI / A4"
+          },
+          "7": {
+            "type": "note",
+            "note": 71,
+            "velocity": 100,
+            "label": "Degree VII / B4"
+          }
         },
         "tilt": {
           "enabled": false,
@@ -151,10 +296,30 @@
       },
       "rightHand": {
         "gestures": {
-          "1": { "type": "cc", "ccNumber": 20, "ccValue": 127, "label": "Voicing 1" },
-          "2": { "type": "cc", "ccNumber": 21, "ccValue": 127, "label": "Voicing 2" },
-          "3": { "type": "cc", "ccNumber": 22, "ccValue": 127, "label": "Voicing 3" },
-          "4": { "type": "cc", "ccNumber": 23, "ccValue": 127, "label": "Voicing 4" }
+          "1": {
+            "type": "cc",
+            "ccNumber": 20,
+            "ccValue": 127,
+            "label": "Voicing 1"
+          },
+          "2": {
+            "type": "cc",
+            "ccNumber": 21,
+            "ccValue": 127,
+            "label": "Voicing 2"
+          },
+          "3": {
+            "type": "cc",
+            "ccNumber": 22,
+            "ccValue": 127,
+            "label": "Voicing 3"
+          },
+          "4": {
+            "type": "cc",
+            "ccNumber": 23,
+            "ccValue": 127,
+            "label": "Voicing 4"
+          }
         },
         "tilt": {
           "enabled": true,
