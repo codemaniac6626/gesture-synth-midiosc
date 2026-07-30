@@ -323,6 +323,36 @@ body {
   letter-spacing: 0.05em;
 }
 
+.start-credits {
+  margin-bottom: 8px;
+  margin-top: 0;
+  font-family: monospace;
+  font-size: 13px;
+  color: var(--text-muted);
+  background: rgba(18, 10, 10, 0.75);
+  border: 1px solid var(--primary-border);
+  padding: 8px 18px;
+  border-radius: 20px;
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+  letter-spacing: 0.03em;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+.start-credits strong {
+  color: var(--primary-color);
+  font-weight: bold;
+}
+
+.credit-divider {
+  color: var(--primary-border);
+  opacity: 0.8;
+}
+
 #overlay.dimmed {
   filter: grayscale(1) brightness(0.6);
 }
