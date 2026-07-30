@@ -26,41 +26,37 @@
       <div class="vol-bar" data-index="0"></div>
     </div>
 
-    <select id="keySelect">
-      <option value="220.00" data-note="A" selected>Key: A</option>
-      <option value="233.08" data-note="Bb">Key: A#/Bb</option>
-      <option value="246.94" data-note="B">Key: B</option>
-      <option value="261.63" data-note="C">Key: C</option>
-      <option value="277.18" data-note="Db">Key: C#/Db</option>
-      <option value="293.66" data-note="D">Key: D</option>
-      <option value="311.13" data-note="Eb">Key: D#/Eb</option>
-      <option value="329.63" data-note="E">Key: E</option>
-      <option value="349.23" data-note="F">Key: F</option>
-      <option value="369.99" data-note="Gb">Key: F#/Gb</option>
-      <option value="392.00" data-note="G">Key: G</option>
-      <option value="415.30" data-note="Ab">Key: G#/Ab</option>
-    </select>
-
-    <select id="toneSelect">
-      <option value="triangle" selected>Warm Synth</option>
-      <option value="sawtooth">Bright Synth</option>
-      <option value="square">Retro Synth</option>
-    </select>
-
-    <!-- MIDI Status Badge -->
-    <div id="midiStatusBadge" title="Web MIDI Status">
-      <span class="led-indicator" id="midiLed"></span>
-      <span id="midiStatusText">MIDI Initializing...</span>
+    <!-- Top Left Controls Bar -->
+    <div class="top-left-controls">
+      <button id="settingsButton" class="icon-btn" title="MIDI & Gesture Settings">⚙</button>
+      <button id="helpButton" class="icon-btn" title="Gesture Guide">?</button>
+      <select id="keySelect">
+        <option value="220.00" data-note="A" selected>Key: A</option>
+        <option value="233.08" data-note="Bb">Key: A#/Bb</option>
+        <option value="246.94" data-note="B">Key: B</option>
+        <option value="261.63" data-note="C">Key: C</option>
+        <option value="277.18" data-note="Db">Key: C#/Db</option>
+        <option value="293.66" data-note="D">Key: D</option>
+        <option value="311.13" data-note="Eb">Key: D#/Eb</option>
+        <option value="329.63" data-note="E">Key: E</option>
+        <option value="349.23" data-note="F">Key: F</option>
+        <option value="369.99" data-note="Gb">Key: F#/Gb</option>
+        <option value="392.00" data-note="G">Key: G</option>
+        <option value="415.30" data-note="Ab">Key: G#/Ab</option>
+      </select>
+      <select id="toneSelect">
+        <option value="triangle" selected>Warm Synth</option>
+        <option value="sawtooth">Bright Synth</option>
+        <option value="square">Retro Synth</option>
+      </select>
+      <div id="midiStatusBadge" title="Web MIDI Status">
+        <span class="led-indicator" id="midiLed"></span>
+        <span id="midiStatusText">MIDI Initializing...</span>
+      </div>
     </div>
 
     <div id="qualityDisplay">--</div>
     <div id="distortionDisplay">Filter: 0%</div>
-
-    <!-- Bottom Left Controls -->
-    <div class="floating-controls">
-      <button id="settingsButton" class="icon-btn" title="MIDI & Gesture Settings">⚙</button>
-      <button id="helpButton" class="icon-btn" title="Gesture Guide">?</button>
-    </div>
 
     <!-- Collapsible Keyboard UI Strip Footer -->
     <div id="keyboardFooter" class="keyboard-footer">
@@ -69,7 +65,7 @@
           <span>🎹 MIDI Keyboard</span>
           <span id="keyboardToggleIcon">▼</span>
         </button>
-        <span id="keyboardStatusText" class="keyboard-status-text">C3 - C6 (Active Output)</span>
+        <span id="keyboardStatusText" class="keyboard-status-text">C2 - C6 (Active Output)</span>
       </div>
       <div id="keyboardContainer" class="keyboard-container">
         <div id="keyboardDisabledOverlay" class="keyboard-disabled-overlay" style="display: none;">

@@ -120,14 +120,25 @@ body {
   z-index: 6;
 }
 
+.top-left-controls {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 10;
+  flex-wrap: wrap;
+}
+
 .icon-btn {
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
   border: 1px solid var(--primary-border);
   background: rgba(20, 20, 20, 0.85);
   color: var(--primary-color);
-  font-size: 20px;
+  font-size: 18px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -143,22 +154,35 @@ body {
   box-shadow: 0 4px 12px rgba(var(--primary-rgb), 0.3);
 }
 
+/* Main UI Elements */
+#keySelect,
+#toneSelect {
+  position: static;
+  height: 36px;
+  background: #1a1a1a;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-border);
+  border-radius: 6px;
+  font-family: monospace;
+  font-size: 13px;
+  padding: 0 8px;
+  cursor: pointer;
+}
+
 /* MIDI Status Indicator Pill */
 #midiStatusBadge {
-  position: absolute;
-  top: 12px;
-  left: 140px;
+  position: static;
+  height: 36px;
   background: rgba(20, 20, 20, 0.85);
   border: 1px solid var(--primary-border);
-  border-radius: 20px;
-  padding: 4px 12px;
+  border-radius: 6px;
+  padding: 0 12px;
   color: var(--text-muted);
-  font-size: 13px;
+  font-size: 12px;
   font-family: monospace;
   display: flex;
   align-items: center;
   gap: 8px;
-  z-index: 5;
   backdrop-filter: blur(8px);
   transition: all 0.3s ease;
 }
@@ -184,37 +208,6 @@ body {
 .led-indicator.flash {
   background: var(--secondary-color) !important;
   box-shadow: 0 0 12px var(--secondary-color) !important;
-}
-
-/* Main UI Elements */
-#keySelect {
-  position: absolute;
-  top: 12px;
-  left: 12px;
-  background: #1a1a1a;
-  color: var(--primary-color);
-  border: 1px solid var(--primary-border);
-  border-radius: 4px;
-  font-family: monospace;
-  font-size: 14px;
-  padding: 4px 8px;
-  z-index: 5;
-  cursor: pointer;
-}
-
-#toneSelect {
-  position: absolute;
-  top: 48px;
-  left: 12px;
-  background: #1a1a1a;
-  color: var(--primary-color);
-  border: 1px solid var(--primary-border);
-  border-radius: 4px;
-  font-family: monospace;
-  font-size: 14px;
-  padding: 4px 8px;
-  z-index: 5;
-  cursor: pointer;
 }
 
 #chordDisplay {
@@ -679,14 +672,16 @@ input:checked+.slider:before {
 .keyboard-footer {
   position: fixed;
   bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: min(880px, 96vw);
+  left: 0;
+  right: 0;
+  width: 100%;
   z-index: 20;
-  background: rgba(18, 18, 18, 0.92);
-  border: 1px solid var(--primary-border);
+  background: rgba(18, 18, 18, 0.94);
+  border-top: 1px solid var(--primary-border);
   border-bottom: none;
-  border-radius: 12px 12px 0 0;
+  border-left: none;
+  border-right: none;
+  border-radius: 0;
   backdrop-filter: blur(12px);
   box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.6);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -699,9 +694,9 @@ input:checked+.slider:before {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 6px 14px;
+  padding: 6px 18px;
   background: rgba(28, 28, 28, 0.95);
-  border-radius: 12px 12px 0 0;
+  border-radius: 0;
   cursor: pointer;
   font-family: monospace;
   font-size: 13px;
@@ -734,7 +729,7 @@ input:checked+.slider:before {
 .keyboard-container {
   position: relative;
   height: 90px;
-  padding: 8px 12px 12px 12px;
+  padding: 8px 16px 12px 16px;
   display: flex;
   justify-content: center;
   align-items: flex-start;

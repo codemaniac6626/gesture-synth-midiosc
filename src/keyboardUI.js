@@ -6,8 +6,8 @@
 
 import { midiNoteToName } from "./musicTheory.js";
 
-/** START MIDI Note (C3) */
-const START_MIDI_NOTE = 48;
+/** START MIDI Note (C2) */
+const START_MIDI_NOTE = 36;
 
 /** END MIDI Note (C6) */
 const END_MIDI_NOTE = 84;
@@ -123,7 +123,7 @@ export function updateKeyboardMidiState(isMidiEnabled) {
   if (isMidiEnabled) {
     footerEl.classList.remove("midi-disabled");
     overlayEl.style.display = "none";
-    statusTextEl.textContent = "C3 - C6 (Active Output)";
+    statusTextEl.textContent = "C2 - C6 (Active Output)";
   } else {
     footerEl.classList.add("midi-disabled");
     overlayEl.style.display = "flex";
